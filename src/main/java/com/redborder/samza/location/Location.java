@@ -1,10 +1,16 @@
 package com.redborder.samza.location;
 
+import com.redborder.samza.util.Utils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.*;
 
 import static com.redborder.samza.util.Dimensions.*;
 
 public class Location {
+    private final Logger log = LoggerFactory.getLogger(getClass().getName());
+
     Long consolidatedTime;
     Long tGlobal;
     Long tLastSeen;
@@ -18,7 +24,7 @@ public class Location {
 
         private String type;
 
-        private LocationType(String type) {
+        LocationType(String type) {
             this.type = type;
         }
     }
@@ -36,8 +42,8 @@ public class Location {
 
     public Location(Long consolidatedTime, Map<String, Object> rawLocation) {
         this.consolidatedTime = consolidatedTime;
-        this.tGlobal = (Long) rawLocation.get(T_GLOBAL);
-        this.tLastSeen = (Long) rawLocation.get(T_LAST_SEEN);
+        this.tGlobal = Utils.timestamp2Long(rawLocation.get(T_GLOBAL));
+        this.tLastSeen = Utils.timestamp2Long(rawLocation.get(T_LAST_SEEN));
         this.oldLoc = (String) rawLocation.get(OLD_LOC);
         this.newLoc = (String) rawLocation.get(NEW_LOC);
         this.consolidated = (String) rawLocation.get(CONSOLIDATED);
@@ -47,8 +53,8 @@ public class Location {
     public List<Map<String, Object>> updateWithNewLocation(Location location, LocationType locationType) {
         List<Map<String, Object>> toSend = new LinkedList<>();
 
-        if (location.newLoc.equals(newLoc)) {
-            if (location.consolidated.equals(newLoc)) {
+        if (newLoc.equals(location.newLoc)) {
+            if (consolidated.equals(location.newLoc)) {
                 for (long t = tLastSeen; t <= location.tLastSeen; t += MINUTE) {
                     Map<String, Object> event = new HashMap<>();
                     event.put(TIMESTAMP, t);
@@ -58,6 +64,7 @@ public class Location {
                     toSend.add(event);
                 }
 
+                log.info("Consolidated state, sending [{}] events", toSend.size());
                 tLastSeen = location.tLastSeen;
             } else {
                 if (location.tLastSeen - tGlobal >= consolidatedTime) {
@@ -83,14 +90,21 @@ public class Location {
                         toSend.add(event);
                     }
 
+                    log.info("Consolidating state, sending [{}] events", toSend.size());
+
                     tGlobal = location.tLastSeen;
                     tLastSeen = location.tLastSeen;
                     oldLoc = location.newLoc;
                     newLoc = location.newLoc;
                     consolidated = location.newLoc;
+                } else {
+                    log.info("Trying to consolidate state, but {}",
+                            String.format("location.tLastSeen[%s] - tGlobal[%s] < consolidatedTime[%s]",
+                                    location.tLastSeen, tGlobal, consolidatedTime));
                 }
             }
         } else {
+            log.info("Moving from [%s] to [%s]", newLoc, location.newLoc);
             tLastSeen = location.tLastSeen;
             oldLoc = newLoc;
             newLoc = location.newLoc;
