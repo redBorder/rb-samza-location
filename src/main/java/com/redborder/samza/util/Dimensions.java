@@ -9,6 +9,8 @@ public class Dimensions {
     public final static String FLOOR = "floor_uuid";
     public final static String ZONE = "zone_uuid";
 
+    public final static String T_GLOBAL_LAST_SEEN = "t_global_last_seen";
+
     public final static String T_GLOBAL = "t_global";
     public final static String T_LAST_SEEN = "t_last_seen";
     public final static String T_TRANSITION = "t_transition";

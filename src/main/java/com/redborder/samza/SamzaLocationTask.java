@@ -2,30 +2,31 @@ package com.redborder.samza;
 
 import com.redborder.samza.location.LocationData;
 import org.apache.samza.config.Config;
+import org.apache.samza.storage.kv.Entry;
+import org.apache.samza.storage.kv.KeyValueIterator;
 import org.apache.samza.storage.kv.KeyValueStore;
 import org.apache.samza.system.IncomingMessageEnvelope;
 import org.apache.samza.system.OutgoingMessageEnvelope;
 import org.apache.samza.system.SystemStream;
 import org.apache.samza.task.*;
 
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.redborder.samza.util.Dimensions.*;
 
-public class SamzaLocationTask implements StreamTask, InitableTask {
+public class SamzaLocationTask implements StreamTask, InitableTask, WindowableTask {
 
     final SystemStream systemStream = new SystemStream("kafka", "rb_loc_post");
     KeyValueStore<String, Map<String, Object>> store;
     Long consolidatedTime;
+    Long expiredTime;
     List<String> dimToEnrich;
 
     @Override
     public void init(Config config, TaskContext taskContext) throws Exception {
         this.store = (KeyValueStore<String, Map<String, Object>>) taskContext.getStore("location");
         this.consolidatedTime = config.getLong("redborder.location.consolidatedTime", 3 * MINUTE);
+        this.expiredTime = config.getLong("redborder.location.expiredTime", 30 * MINUTE);
         this.dimToEnrich = config.getList("redborder.location.dimToEnrich", Collections.<String>emptyList());
     }
 
@@ -52,7 +53,6 @@ public class SamzaLocationTask implements StreamTask, InitableTask {
 
 
             for (Map<String, Object> event : events) {
-
                 for (String dim : dimToEnrich) {
                     Object dimValue = message.get(dim);
                     if (dimValue != null) {
@@ -63,5 +63,24 @@ public class SamzaLocationTask implements StreamTask, InitableTask {
                 collector.send(new OutgoingMessageEnvelope(systemStream, event.get(CLIENT), event));
             }
         }
+    }
+
+    @Override
+    public void window(MessageCollector messageCollector, TaskCoordinator taskCoordinator) throws Exception {
+        KeyValueIterator<String, Map<String, Object>> iter = store.all();
+        Long currentTime = System.currentTimeMillis() / 1000L;
+
+        List<String> toDelete = new ArrayList<>();
+
+        while (iter.hasNext()){
+            Entry<String, Map<String, Object>> entry = iter.next();
+            LocationData locationData = LocationData.locationFromCache(consolidatedTime, entry.getValue());
+
+            if(currentTime - locationData.tGlobalLastSeen >= expiredTime){
+                toDelete.add(entry.getKey());
+            }
+        }
+
+        store.deleteAll(toDelete);
     }
 }

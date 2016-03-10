@@ -7,12 +7,14 @@ import java.util.*;
 import static com.redborder.samza.util.Dimensions.*;
 
 public class LocationData {
+    public Long tGlobalLastSeen;
     Campus campus;
     Building building;
     Floor floor;
     Zone zone;
 
-    private LocationData(Campus campus, Building building, Floor floor, Zone zone) {
+    private LocationData(Long timestamp, Campus campus, Building building, Floor floor, Zone zone) {
+        this.tGlobalLastSeen = timestamp;
         this.campus = campus;
         this.building = building;
         this.floor = floor;
@@ -44,6 +46,8 @@ public class LocationData {
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>();
 
+        map.put(T_GLOBAL_LAST_SEEN, tGlobalLastSeen);
+
         if (campus != null) map.put(CAMPUS, campus.toMap());
         if (building != null) map.put(BUILDING, building.toMap());
         if (floor != null) map.put(FLOOR, floor.toMap());
@@ -54,6 +58,7 @@ public class LocationData {
 
     public static LocationData locationFromCache(Long consolidatedTime, Map<String, Object> rawData) {
         LocationData.Builder builder = new LocationData.Builder();
+        builder.timestamp(Utils.timestamp2Long(rawData.get(T_GLOBAL_LAST_SEEN)));
 
         Map<String, Object> campusData = (Map<String, Object>) rawData.get(CAMPUS);
         if (campusData != null) {
@@ -79,8 +84,10 @@ public class LocationData {
     }
 
     public static LocationData locationFromMessage(Long consolidatedTime, Map<String, Object> rawData) {
-        LocationData.Builder builder = new LocationData.Builder();
         Long timestamp = Utils.timestamp2Long(rawData.get(TIMESTAMP));
+
+        LocationData.Builder builder = new LocationData.Builder();
+        builder.timestamp(timestamp);
 
         String campus = (String) rawData.get(CAMPUS);
         if (campus != null) {
@@ -106,10 +113,15 @@ public class LocationData {
     }
 
     public static class Builder {
+        Long tGlobalLastSeen;
         Campus campus;
         Building building;
         Floor floor;
         Zone zone;
+
+        public void timestamp(Long timestamp){
+            this.tGlobalLastSeen = timestamp;
+        }
 
         public void withCampus(Campus campus) {
             this.campus = campus;
@@ -128,7 +140,7 @@ public class LocationData {
         }
 
         public LocationData build() {
-            return new LocationData(campus, building, floor, zone);
+            return new LocationData(tGlobalLastSeen, campus, building, floor, zone);
         }
     }
 }
