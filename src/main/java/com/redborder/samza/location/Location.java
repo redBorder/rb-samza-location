@@ -148,6 +148,7 @@ public class Location {
         Map<String, Object> map = new HashMap<>();
         map.put(T_GLOBAL, tGlobal);
         map.put(T_LAST_SEEN, tLastSeen);
+        map.put(T_TRANSITION, tTransition);
         map.put(OLD_LOC, oldLoc);
         map.put(NEW_LOC, newLoc);
         map.put(CONSOLIDATED, consolidated);
