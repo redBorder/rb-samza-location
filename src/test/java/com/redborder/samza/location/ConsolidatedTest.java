@@ -28,8 +28,8 @@ public class ConsolidatedTest extends TestCase {
     private static Long CONSOLIDATED_TIME = 3 * MINUTE;
     static List<Map<String, Object>> results;
 
-    static Long T1 = 1457500000L;
-    static Long T2 = 1457500200L;
+    static Long T1 = 1000000000L;
+    static Long T2 = 1000000200L;
 
     @BeforeClass
     public static void prepare() throws Exception {
@@ -86,19 +86,67 @@ public class ConsolidatedTest extends TestCase {
         for (Map<String, Object> result : results) {
             Long tKey = (Long) result.get(TIMESTAMP);
 
-            if(!times.containsKey(tKey)) {
+            if (!times.containsKey(tKey)) {
                 times.put(tKey, 1);
             } else {
                 times.put(tKey, times.get(tKey) + 1);
             }
         }
 
-        for(Integer time : times.values()){
+        for (Integer time : times.values()) {
             assertEquals(Integer.valueOf(4), time);
         }
 
-        for(Long t = T1; t <= T2; t += 60){
+        for (Long t = T1; t <= T2; t += 60) {
             assertTrue(times.containsKey(t));
+        }
+    }
+
+    @Test
+    public void checkLocations() throws Exception {
+        for (Map<String, Object> result : results) {
+
+            if (result.get(TIMESTAMP).equals(T1)) {
+                if (result.get(TYPE).equals(Location.LocationType.CAMPUS.type)) {
+                    assertEquals("N/A", result.get(OLD_LOC));
+                    assertEquals("C1", result.get(NEW_LOC));
+                }
+
+                if (result.get(TYPE).equals(Location.LocationType.BUILDING.type)) {
+                    assertEquals("N/A", result.get(OLD_LOC));
+                    assertEquals("B1", result.get(NEW_LOC));
+                }
+
+                if (result.get(TYPE).equals(Location.LocationType.FLOOR.type)) {
+                    assertEquals("N/A", result.get(OLD_LOC));
+                    assertEquals("F1", result.get(NEW_LOC));
+                }
+
+                if (result.get(TYPE).equals(Location.LocationType.ZONE.type)) {
+                    assertEquals("N/A", result.get(OLD_LOC));
+                    assertEquals("Z1", result.get(NEW_LOC));
+                }
+            } else {
+                if (result.get(TYPE).equals(Location.LocationType.CAMPUS.type)) {
+                    assertEquals("C1", result.get(OLD_LOC));
+                    assertEquals("C1", result.get(NEW_LOC));
+                }
+
+                if (result.get(TYPE).equals(Location.LocationType.BUILDING.type)) {
+                    assertEquals("B1", result.get(OLD_LOC));
+                    assertEquals("B1", result.get(NEW_LOC));
+                }
+
+                if (result.get(TYPE).equals(Location.LocationType.FLOOR.type)) {
+                    assertEquals("F1", result.get(OLD_LOC));
+                    assertEquals("F1", result.get(NEW_LOC));
+                }
+
+                if (result.get(TYPE).equals(Location.LocationType.ZONE.type)) {
+                    assertEquals("Z1", result.get(OLD_LOC));
+                    assertEquals("Z1", result.get(NEW_LOC));
+                }
+            }
         }
     }
 }
