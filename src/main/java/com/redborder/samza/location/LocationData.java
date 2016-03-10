@@ -84,22 +84,22 @@ public class LocationData {
 
         String campus = (String) rawData.get(CAMPUS);
         if (campus != null) {
-            builder.withCampus(new Campus(consolidatedTime, timestamp, timestamp, "N/A", campus, "N/A", campus));
+            builder.withCampus(new Campus(consolidatedTime, timestamp, timestamp, timestamp, "N/A", campus, "N/A", campus));
         }
 
         String building = (String) rawData.get(BUILDING);
         if (building != null) {
-            builder.withBuilding(new Building(consolidatedTime, timestamp, timestamp, "N/A", building, "N/A", building));
+            builder.withBuilding(new Building(consolidatedTime, timestamp, timestamp, timestamp, "N/A", building, "N/A", building));
         }
 
         String floor = (String) rawData.get(FLOOR);
         if (floor != null) {
-            builder.withFloor(new Floor(consolidatedTime, timestamp, timestamp, "N/A", floor, "N/A", floor));
+            builder.withFloor(new Floor(consolidatedTime, timestamp, timestamp, timestamp, "N/A", floor, "N/A", floor));
         }
 
         String zone = (String) rawData.get(ZONE);
         if (zone != null) {
-            builder.withZone(new Zone(consolidatedTime, timestamp, timestamp, "N/A", zone, "N/A", zone));
+            builder.withZone(new Zone(consolidatedTime, timestamp, timestamp, timestamp, "N/A", zone, "N/A", zone));
         }
 
         return builder.build();

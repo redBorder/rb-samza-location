@@ -14,6 +14,7 @@ public class Location {
     Long consolidatedTime;
     Long tGlobal;
     Long tLastSeen;
+    Long tTransition;
     String oldLoc;
     String newLoc;
     String consolidated;
@@ -22,18 +23,19 @@ public class Location {
     enum LocationType {
         CAMPUS("campus"), BUILDING("building"), FLOOR("floor"), ZONE("zone");
 
-        private String type;
+        public String type;
 
         LocationType(String type) {
             this.type = type;
         }
     }
 
-    public Location(Long consolidatedTime, Long tGlobal, Long tLastSeen, String oldLoc, String newLoc,
+    public Location(Long consolidatedTime, Long tGlobal, Long tLastSeen, Long tTransition, String oldLoc, String newLoc,
                     String consolidated, String entrance) {
         this.consolidatedTime = consolidatedTime;
         this.tGlobal = tGlobal;
         this.tLastSeen = tLastSeen;
+        this.tTransition = tTransition;
         this.oldLoc = oldLoc;
         this.newLoc = newLoc;
         this.consolidated = consolidated;
@@ -44,6 +46,7 @@ public class Location {
         this.consolidatedTime = consolidatedTime;
         this.tGlobal = Utils.timestamp2Long(rawLocation.get(T_GLOBAL));
         this.tLastSeen = Utils.timestamp2Long(rawLocation.get(T_LAST_SEEN));
+        this.tTransition = Utils.timestamp2Long(rawLocation.get(T_TRANSITION));
         this.oldLoc = (String) rawLocation.get(OLD_LOC);
         this.newLoc = (String) rawLocation.get(NEW_LOC);
         this.consolidated = (String) rawLocation.get(CONSOLIDATED);
@@ -67,21 +70,43 @@ public class Location {
                 log.info("Consolidated state, sending [{}] events", toSend.size());
                 tLastSeen = location.tLastSeen;
             } else {
-                if (location.tLastSeen - tGlobal >= consolidatedTime) {
-                    Map<String, Object> consolidatedMoving = new HashMap<>();
-                    consolidatedMoving.put(TIMESTAMP, tGlobal);
+                if (location.tLastSeen - tLastSeen >= consolidatedTime) {
+                    if (consolidated.equals("N/A")) {
+                        Map<String, Object> event = new HashMap<>();
+                        event.put(TIMESTAMP, tGlobal);
+                        event.put(OLD_LOC, consolidated);
+                        event.put(NEW_LOC, entrance);
+                        event.put(TYPE, locationType.type);
+                        toSend.add(event);
 
-                    if(!oldLoc.equals("N/A")) {
-                        consolidatedMoving.put(OLD_LOC, oldLoc);
+                        consolidated = entrance;
+                        tTransition += MINUTE;
+
+                        if (tLastSeen > tTransition) {
+                            tLastSeen += MINUTE;
+                        }
+
                     } else {
-                        consolidatedMoving.put(OLD_LOC, entrance);
+                        for (long t = tGlobal; t <= (tTransition - MINUTE); t += MINUTE) {
+                            Map<String, Object> event = new HashMap<>();
+                            event.put(TIMESTAMP, t);
+                            event.put(OLD_LOC, consolidated);
+                            event.put(NEW_LOC, consolidated);
+                            event.put(TYPE, locationType.type);
+                            toSend.add(event);
+                        }
                     }
 
-                    consolidatedMoving.put(NEW_LOC, location.newLoc);
-                    consolidatedMoving.put(TYPE, locationType.type);
-                    toSend.add(consolidatedMoving);
+                    for (long t = tTransition; t <= tLastSeen; t += MINUTE) {
+                        Map<String, Object> event = new HashMap<>();
+                        event.put(TIMESTAMP, t);
+                        event.put(OLD_LOC, consolidated);
+                        event.put(NEW_LOC, location.newLoc);
+                        event.put(TYPE, locationType.type);
+                        toSend.add(event);
+                    }
 
-                    for (long t = (tGlobal + MINUTE); t <= location.tLastSeen; t += MINUTE) {
+                    for (long t = (tLastSeen + MINUTE); t <= location.tLastSeen; t += MINUTE) {
                         Map<String, Object> event = new HashMap<>();
                         event.put(TIMESTAMP, t);
                         event.put(OLD_LOC, location.newLoc);
@@ -94,20 +119,26 @@ public class Location {
 
                     tGlobal = location.tLastSeen;
                     tLastSeen = location.tLastSeen;
+                    tTransition = location.tTransition;
                     oldLoc = location.newLoc;
                     newLoc = location.newLoc;
                     consolidated = location.newLoc;
                 } else {
                     log.info("Trying to consolidate state, but {}",
-                            String.format("location.tLastSeen[%s] - tGlobal[%s] < consolidatedTime[%s]",
-                                    location.tLastSeen, tGlobal, consolidatedTime));
+                            String.format("location.tLastSeen[%s] - tLastSeen[%s] < consolidatedTime[%s]",
+                                    location.tLastSeen, tLastSeen, consolidatedTime));
                 }
             }
         } else {
-            log.info("Moving from [%s] to [%s]", newLoc, location.newLoc);
+            log.info("Moving from [{}] to [{}]", newLoc, location.newLoc);
             tLastSeen = location.tLastSeen;
             oldLoc = newLoc;
             newLoc = location.newLoc;
+
+            // Leaving consolidated location.
+            if (oldLoc.equals(consolidated)) {
+                tTransition = location.tLastSeen;
+            }
         }
 
         return toSend;

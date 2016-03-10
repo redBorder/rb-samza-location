@@ -7,7 +7,7 @@ public class Floor extends Location {
         super(consolidatedTime, rawLocation);
     }
 
-    public Floor(Long consolidatedTime, Long tGlobal, Long tLastSeen, String oldLoc, String newLoc, String consolidated, String entrance) {
-        super(consolidatedTime, tGlobal, tLastSeen, oldLoc, newLoc, consolidated, entrance);
+    public Floor(Long consolidatedTime, Long tGlobal, Long tLastSeen, Long tTransition, String oldLoc, String newLoc, String consolidated, String entrance) {
+        super(consolidatedTime, tGlobal, tLastSeen, tTransition, oldLoc, newLoc, consolidated, entrance);
     }
 }
