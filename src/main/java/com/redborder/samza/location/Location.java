@@ -83,6 +83,7 @@ public class Location {
                         event.put(TIMESTAMP, tGlobal);
                         event.put(OLD_LOC, consolidated);
                         event.put(NEW_LOC, entrance);
+                        event.put(TRANSITION, 1);
                         event.put(DWELL_TIME, 1);
                         event.put(TYPE, locationType.type);
                         toSend.add(event);
@@ -97,6 +98,7 @@ public class Location {
                             event.put(OLD_LOC, consolidated);
                             event.put(NEW_LOC, consolidated);
                             event.put(DWELL_TIME, dWellTime);
+                            event.put(TRANSITION, 0);
                             event.put(TYPE, locationType.type);
                             toSend.add(event);
                             dWellTime++;
@@ -111,6 +113,7 @@ public class Location {
                         event.put(OLD_LOC, consolidated);
                         event.put(NEW_LOC, location.newLoc);
                         event.put(DWELL_TIME, dWellTime);
+                        event.put(TRANSITION, 1);
                         event.put(TYPE, locationType.type);
                         toSend.add(event);
                         dWellTime++;
@@ -124,6 +127,7 @@ public class Location {
                         event.put(OLD_LOC, location.newLoc);
                         event.put(NEW_LOC, location.newLoc);
                         event.put(DWELL_TIME, dWellTime);
+                        event.put(TRANSITION, 0);
                         event.put(TYPE, locationType.type);
                         toSend.add(event);
                         dWellTime++;
