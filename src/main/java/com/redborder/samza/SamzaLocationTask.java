@@ -53,6 +53,7 @@ public class SamzaLocationTask implements StreamTask, InitableTask, WindowableTa
 
 
             for (Map<String, Object> event : events) {
+                event.put(CLIENT, client);
                 for (String dim : dimToEnrich) {
                     Object dimValue = message.get(dim);
                     if (dimValue != null) {
