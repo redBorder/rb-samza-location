@@ -71,6 +71,8 @@ public class Location {
                 tLastSeen = location.tLastSeen;
             } else {
                 if (location.tLastSeen - tLastSeen >= consolidatedTime) {
+
+                    // Check if it's the first move!
                     if (consolidated.equals("N/A")) {
                         Map<String, Object> event = new HashMap<>();
                         event.put(TIMESTAMP, tGlobal);
@@ -81,12 +83,8 @@ public class Location {
 
                         consolidated = entrance;
                         tTransition += MINUTE;
-
-                        if (tLastSeen > tTransition) {
-                            tLastSeen += MINUTE;
-                        }
-
                     } else {
+                        // Last Consolidated location
                         for (long t = tGlobal; t <= (tTransition - MINUTE); t += MINUTE) {
                             Map<String, Object> event = new HashMap<>();
                             event.put(TIMESTAMP, t);
@@ -97,6 +95,7 @@ public class Location {
                         }
                     }
 
+                    // Transition
                     for (long t = tTransition; t <= tLastSeen; t += MINUTE) {
                         Map<String, Object> event = new HashMap<>();
                         event.put(TIMESTAMP, t);
@@ -106,6 +105,7 @@ public class Location {
                         toSend.add(event);
                     }
 
+                    // New Consolidated location
                     for (long t = (tLastSeen + MINUTE); t <= location.tLastSeen; t += MINUTE) {
                         Map<String, Object> event = new HashMap<>();
                         event.put(TIMESTAMP, t);
