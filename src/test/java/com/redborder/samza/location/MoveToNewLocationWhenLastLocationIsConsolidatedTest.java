@@ -155,7 +155,6 @@ public class MoveToNewLocationWhenLastLocationIsConsolidatedTest extends TestCas
 
     @Test
     public void checkFloor() throws Exception {
-        log.info("{}", results);
         for (Map<String, Object> result : results) {
             if (result.get(TYPE).equals(Location.LocationType.FLOOR.type)) {
                 if (result.get(TIMESTAMP).equals(T1)) {
@@ -174,6 +173,7 @@ public class MoveToNewLocationWhenLastLocationIsConsolidatedTest extends TestCas
 
     @Test
     public void checkZone() throws Exception {
+        log.info("{}", results);
         for (Map<String, Object> result : results) {
             if (result.get(TYPE).equals(Location.LocationType.ZONE.type)) {
                 if (result.get(TIMESTAMP).equals(T1)) {

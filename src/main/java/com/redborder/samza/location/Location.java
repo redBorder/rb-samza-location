@@ -15,6 +15,7 @@ public class Location {
     Long tGlobal;
     Long tLastSeen;
     Long tTransition;
+    Integer dWellTime;
     String oldLoc;
     String newLoc;
     String consolidated;
@@ -40,6 +41,7 @@ public class Location {
         this.newLoc = newLoc;
         this.consolidated = consolidated;
         this.entrance = entrance;
+        this.dWellTime = 1;
     }
 
     public Location(Long consolidatedTime, Map<String, Object> rawLocation) {
@@ -47,6 +49,7 @@ public class Location {
         this.tGlobal = Utils.timestamp2Long(rawLocation.get(T_GLOBAL));
         this.tLastSeen = Utils.timestamp2Long(rawLocation.get(T_LAST_SEEN));
         this.tTransition = Utils.timestamp2Long(rawLocation.get(T_TRANSITION));
+        this.dWellTime = (Integer) rawLocation.get(DWELL_TIME);
         this.oldLoc = (String) rawLocation.get(OLD_LOC);
         this.newLoc = (String) rawLocation.get(NEW_LOC);
         this.consolidated = (String) rawLocation.get(CONSOLIDATED);
@@ -63,8 +66,10 @@ public class Location {
                     event.put(TIMESTAMP, t);
                     event.put(OLD_LOC, location.newLoc);
                     event.put(NEW_LOC, location.newLoc);
+                    event.put(DWELL_TIME, dWellTime);
                     event.put(TYPE, locationType.type);
                     toSend.add(event);
+                    dWellTime++;
                 }
 
                 log.info("Consolidated state, sending [{}] events", toSend.size());
@@ -78,6 +83,7 @@ public class Location {
                         event.put(TIMESTAMP, tGlobal);
                         event.put(OLD_LOC, consolidated);
                         event.put(NEW_LOC, entrance);
+                        event.put(DWELL_TIME, 1);
                         event.put(TYPE, locationType.type);
                         toSend.add(event);
 
@@ -90,29 +96,37 @@ public class Location {
                             event.put(TIMESTAMP, t);
                             event.put(OLD_LOC, consolidated);
                             event.put(NEW_LOC, consolidated);
+                            event.put(DWELL_TIME, dWellTime);
                             event.put(TYPE, locationType.type);
                             toSend.add(event);
+                            dWellTime++;
                         }
                     }
 
+                    dWellTime = 1;
                     // Transition
                     for (long t = tTransition; t <= tLastSeen; t += MINUTE) {
                         Map<String, Object> event = new HashMap<>();
                         event.put(TIMESTAMP, t);
                         event.put(OLD_LOC, consolidated);
                         event.put(NEW_LOC, location.newLoc);
+                        event.put(DWELL_TIME, dWellTime);
                         event.put(TYPE, locationType.type);
                         toSend.add(event);
+                        dWellTime++;
                     }
 
+                    dWellTime = 1;
                     // New Consolidated location
                     for (long t = (tLastSeen + MINUTE); t <= location.tLastSeen; t += MINUTE) {
                         Map<String, Object> event = new HashMap<>();
                         event.put(TIMESTAMP, t);
                         event.put(OLD_LOC, location.newLoc);
                         event.put(NEW_LOC, location.newLoc);
+                        event.put(DWELL_TIME, dWellTime);
                         event.put(TYPE, locationType.type);
                         toSend.add(event);
+                        dWellTime++;
                     }
 
                     log.info("Consolidating state, sending [{}] events", toSend.size());
@@ -149,6 +163,7 @@ public class Location {
         map.put(T_GLOBAL, tGlobal);
         map.put(T_LAST_SEEN, tLastSeen);
         map.put(T_TRANSITION, tTransition);
+        map.put(DWELL_TIME, dWellTime);
         map.put(OLD_LOC, oldLoc);
         map.put(NEW_LOC, newLoc);
         map.put(CONSOLIDATED, consolidated);
