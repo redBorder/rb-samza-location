@@ -43,13 +43,13 @@ public class SamzaLocationTask implements StreamTask, InitableTask, WindowableTa
 
         if (client != null) {
             List<Map<String, Object>> events = new LinkedList<>();
-            LocationData currentLocation = LocationData.locationFromMessage(consolidatedTime, message, id);
+            LocationData currentLocation = LocationData.locationFromMessage(consolidatedTime, expiredTime, message, id);
             Map<String, Object> cacheData = store.get(id);
 
             log.info("Detected client with ID[{}] and with current data [{}] and cached data [" + cacheData + "]", id, currentLocation.toMap());
 
             if (cacheData != null) {
-                LocationData cacheLocation = LocationData.locationFromCache(consolidatedTime, cacheData, id);
+                LocationData cacheLocation = LocationData.locationFromCache(consolidatedTime, expiredTime, cacheData, id);
                 events.addAll(cacheLocation.updateWithNewLocationData(currentLocation));
                 Map<String, Object> locationMap = cacheLocation.toMap();
                 store.put(id, locationMap);
@@ -85,7 +85,7 @@ public class SamzaLocationTask implements StreamTask, InitableTask, WindowableTa
 
         while (iter.hasNext()) {
             Entry<String, Map<String, Object>> entry = iter.next();
-            LocationData locationData = LocationData.locationFromCache(consolidatedTime, entry.getValue(), entry.getKey());
+            LocationData locationData = LocationData.locationFromCache(consolidatedTime, expiredTime, entry.getValue(), entry.getKey());
 
             if (currentTime - locationData.tGlobalLastSeen >= expiredTime) {
                // TODO: Sending remove clients events.

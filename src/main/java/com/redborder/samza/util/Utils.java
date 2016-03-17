@@ -18,4 +18,22 @@ public class Utils {
 
         return result;
     }
+
+    public static Long toLong(Object l) {
+        Long result;
+
+        if (l != null) {
+            if (l instanceof Integer) {
+                result = ((Integer) l).longValue();
+            } else if (l instanceof Long) {
+                result = (Long) l;
+            } else {
+                result = 0L;
+            }
+        } else {
+            result = 0L;
+        }
+
+        return result;
+    }
 }

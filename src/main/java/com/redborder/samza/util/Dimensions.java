@@ -15,7 +15,7 @@ public class Dimensions {
     public final static String T_LAST_SEEN = "t_last_seen";
     public final static String T_TRANSITION = "t_transition";
     public final static String DWELL_TIME = "dwell_time";
-    public final static String SESION = "dwell_time";
+    public final static String SESSION = "session";
     public final static String TRANSITION = "transition";
     public final static String NEW_LOC = "new";
     public final static String OLD_LOC = "old";

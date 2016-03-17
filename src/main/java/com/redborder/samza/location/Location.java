@@ -65,7 +65,7 @@ public class Location {
         this.consolidated = (String) rawLocation.get(CONSOLIDATED);
         this.entrance = (String) rawLocation.get(ENTRANCE);
         this.latLong = (String) rawLocation.get(LATLONG);
-        this.uuid = Utils.timestamp2Long(rawLocation.get(UUID));
+        this.uuid = Utils.toLong(rawLocation.get(UUID));
         this.uuidPrefix = uuidPrefix;
     }
 
@@ -79,7 +79,7 @@ public class Location {
             event.put(OLD_LOC, newLoc);
             event.put(NEW_LOC, "outside");
             event.put(DWELL_TIME, dWellTime);
-            event.put(SESION, String.format("%s-%s", uuidPrefix, uuid));
+            event.put(SESSION, String.format("%s-%s", uuidPrefix, uuid));
             event.put(locationWithUuid(locationType), newLoc);
             event.put(TYPE, locationType.type);
             toSend.add(event);
@@ -103,7 +103,7 @@ public class Location {
                     event.put(OLD_LOC, location.newLoc);
                     event.put(NEW_LOC, location.newLoc);
                     event.put(DWELL_TIME, dWellTime);
-                    event.put(SESION, String.format("%s-%s", uuidPrefix, uuid));
+                    event.put(SESSION, String.format("%s-%s", uuidPrefix, uuid));
                     event.put(locationWithUuid(locationType), location.newLoc);
                     event.put(TYPE, locationType.type);
 
@@ -125,7 +125,7 @@ public class Location {
                         event.put(TIMESTAMP, tGlobal);
                         event.put(OLD_LOC, consolidated);
                         event.put(NEW_LOC, entrance);
-                        event.put(SESION, String.format("%s-%s", uuidPrefix, uuid));
+                        event.put(SESSION, String.format("%s-%s", uuidPrefix, uuid));
                         event.put(locationWithUuid(locationType), entrance);
                         event.put(TRANSITION, 1);
                         event.put(DWELL_TIME, 1);
@@ -146,7 +146,7 @@ public class Location {
                             event.put(TIMESTAMP, t);
                             event.put(OLD_LOC, consolidated);
                             event.put(NEW_LOC, consolidated);
-                            event.put(SESION, String.format("%s-%s", uuidPrefix, uuid));
+                            event.put(SESSION, String.format("%s-%s", uuidPrefix, uuid));
                             event.put(DWELL_TIME, dWellTime);
                             event.put(locationWithUuid(locationType), consolidated);
                             event.put(TRANSITION, 0);
@@ -171,7 +171,7 @@ public class Location {
                         event.put(TIMESTAMP, t);
                         event.put(OLD_LOC, consolidated);
                         event.put(NEW_LOC, location.newLoc);
-                        event.put(SESION, String.format("%s-%s", uuidPrefix, uuid));
+                        event.put(SESSION, String.format("%s-%s", uuidPrefix, uuid));
                         event.put(locationWithUuid(locationType), location.newLoc);
                         event.put(DWELL_TIME, dWellTime);
                         event.put(TRANSITION, 1);
@@ -192,7 +192,7 @@ public class Location {
                         event.put(TIMESTAMP, t);
                         event.put(OLD_LOC, location.newLoc);
                         event.put(NEW_LOC, location.newLoc);
-                        event.put(SESION, String.format("%s-%s", uuidPrefix, uuid));
+                        event.put(SESSION, String.format("%s-%s", uuidPrefix, uuid));
                         event.put(locationWithUuid(locationType), location.newLoc);
                         event.put(DWELL_TIME, dWellTime);
                         event.put(TRANSITION, 0);

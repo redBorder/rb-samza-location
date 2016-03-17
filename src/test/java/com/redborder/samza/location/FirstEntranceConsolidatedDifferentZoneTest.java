@@ -29,6 +29,8 @@ import static org.mockito.Mockito.when;
 public class FirstEntranceConsolidatedDifferentZoneTest extends TestCase {
     private final Logger log = LoggerFactory.getLogger(getClass().getName());
     private static Long CONSOLIDATED_TIME = 3 * MINUTE;
+    private static Long EXPIRED_TIME = 30 * MINUTE;
+
     static List<Map<String, Object>> results;
 
     static Long T1 = 1000000000L;
@@ -44,8 +46,8 @@ public class FirstEntranceConsolidatedDifferentZoneTest extends TestCase {
         Config config = mock(Config.class);
         when(config.getLong("redborder.location.consolidatedTime", CONSOLIDATED_TIME))
                 .thenReturn(CONSOLIDATED_TIME);
-        when(config.getList("redborder.location.dimToEnrich", Collections.<String>emptyList()))
-                .thenReturn(Collections.<String>emptyList());
+        when(config.getLong("redborder.location.expiredTime", EXPIRED_TIME))
+                .thenReturn(EXPIRED_TIME);
 
         samzaLocationTask.init(config, new MockTaskContext());
 
