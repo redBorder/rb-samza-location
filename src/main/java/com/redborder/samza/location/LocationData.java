@@ -8,10 +8,10 @@ import static com.redborder.samza.util.Dimensions.*;
 
 public class LocationData {
     public Long tGlobalLastSeen;
-    Campus campus;
-    Building building;
-    Floor floor;
-    Zone zone;
+    public Campus campus;
+    public Building building;
+    public Floor floor;
+    public Zone zone;
 
     private LocationData(Long timestamp, Campus campus, Building building, Floor floor, Zone zone) {
         this.tGlobalLastSeen = timestamp;
@@ -57,34 +57,34 @@ public class LocationData {
         return map;
     }
 
-    public static LocationData locationFromCache(Long consolidatedTime, Map<String, Object> rawData) {
+    public static LocationData locationFromCache(Long consolidatedTime, Map<String, Object> rawData, String uuidPrefix) {
         LocationData.Builder builder = new LocationData.Builder();
         builder.timestamp(Utils.timestamp2Long(rawData.get(T_GLOBAL_LAST_SEEN)));
 
         Map<String, Object> campusData = (Map<String, Object>) rawData.get(CAMPUS);
         if (campusData != null) {
-            builder.withCampus(new Campus(consolidatedTime, campusData));
+            builder.withCampus(new Campus(consolidatedTime, campusData, uuidPrefix));
         }
 
         Map<String, Object> buildingData = (Map<String, Object>) rawData.get(BUILDING);
         if (buildingData != null) {
-            builder.withBuilding(new Building(consolidatedTime, buildingData));
+            builder.withBuilding(new Building(consolidatedTime, buildingData, uuidPrefix));
         }
 
         Map<String, Object> floorData = (Map<String, Object>) rawData.get(FLOOR);
         if (floorData != null) {
-            builder.withFloor(new Floor(consolidatedTime, floorData));
+            builder.withFloor(new Floor(consolidatedTime, floorData, uuidPrefix));
         }
 
         Map<String, Object> zoneData = (Map<String, Object>) rawData.get(ZONE);
         if (zoneData != null) {
-            builder.withZone(new Zone(consolidatedTime, zoneData));
+            builder.withZone(new Zone(consolidatedTime, zoneData, uuidPrefix));
         }
 
         return builder.build();
     }
 
-    public static LocationData locationFromMessage(Long consolidatedTime, Map<String, Object> rawData) {
+    public static LocationData locationFromMessage(Long consolidatedTime, Map<String, Object> rawData, String uuidPrefix) {
         Long timestamp = Utils.timestamp2Long(rawData.get(TIMESTAMP));
         String latLong = (String) rawData.get(LATLONG);
 
@@ -93,22 +93,22 @@ public class LocationData {
 
         String campus = (String) rawData.get(CAMPUS);
         if (campus != null) {
-            builder.withCampus(new Campus(consolidatedTime, timestamp, timestamp, timestamp, "outside", campus, "outside", campus, latLong));
+            builder.withCampus(new Campus(consolidatedTime, timestamp, timestamp, timestamp, "outside", campus, "outside", campus, latLong, uuidPrefix));
         }
 
         String building = (String) rawData.get(BUILDING);
         if (building != null) {
-            builder.withBuilding(new Building(consolidatedTime, timestamp, timestamp, timestamp, "outside", building, "outside", building, latLong));
+            builder.withBuilding(new Building(consolidatedTime, timestamp, timestamp, timestamp, "outside", building, "outside", building, latLong, uuidPrefix));
         }
 
         String floor = (String) rawData.get(FLOOR);
         if (floor != null) {
-            builder.withFloor(new Floor(consolidatedTime, timestamp, timestamp, timestamp, "outside", floor, "outside", floor, latLong));
+            builder.withFloor(new Floor(consolidatedTime, timestamp, timestamp, timestamp, "outside", floor, "outside", floor, latLong, uuidPrefix));
         }
 
         String zone = (String) rawData.get(ZONE);
         if (zone != null) {
-            builder.withZone(new Zone(consolidatedTime, timestamp, timestamp, timestamp, "outside", zone, "outside", zone, latLong));
+            builder.withZone(new Zone(consolidatedTime, timestamp, timestamp, timestamp, "outside", zone, "outside", zone, latLong, uuidPrefix));
         }
 
         return builder.build();

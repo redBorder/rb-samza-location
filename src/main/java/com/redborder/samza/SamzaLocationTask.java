@@ -1,5 +1,6 @@
 package com.redborder.samza;
 
+import com.redborder.samza.location.Location;
 import com.redborder.samza.location.LocationData;
 import org.apache.samza.config.Config;
 import org.apache.samza.storage.kv.Entry;
@@ -42,13 +43,13 @@ public class SamzaLocationTask implements StreamTask, InitableTask, WindowableTa
 
         if (client != null) {
             List<Map<String, Object>> events = new LinkedList<>();
-            LocationData currentLocation = LocationData.locationFromMessage(consolidatedTime, message);
+            LocationData currentLocation = LocationData.locationFromMessage(consolidatedTime, message, id);
             Map<String, Object> cacheData = store.get(id);
 
             log.info("Detected client with ID[{}] and with current data [{}] and cached data [" + cacheData + "]", id, currentLocation.toMap());
 
             if (cacheData != null) {
-                LocationData cacheLocation = LocationData.locationFromCache(consolidatedTime, cacheData);
+                LocationData cacheLocation = LocationData.locationFromCache(consolidatedTime, cacheData, id);
                 events.addAll(cacheLocation.updateWithNewLocationData(currentLocation));
                 Map<String, Object> locationMap = cacheLocation.toMap();
                 store.put(id, locationMap);
@@ -81,18 +82,14 @@ public class SamzaLocationTask implements StreamTask, InitableTask, WindowableTa
         KeyValueIterator<String, Map<String, Object>> iter = store.all();
         Long currentTime = System.currentTimeMillis() / 1000L;
 
-        List<String> toDelete = new ArrayList<>();
 
         while (iter.hasNext()) {
             Entry<String, Map<String, Object>> entry = iter.next();
-            LocationData locationData = LocationData.locationFromCache(consolidatedTime, entry.getValue());
+            LocationData locationData = LocationData.locationFromCache(consolidatedTime, entry.getValue(), entry.getKey());
 
             if (currentTime - locationData.tGlobalLastSeen >= expiredTime) {
-                toDelete.add(entry.getKey());
+               // TODO: Sending remove clients events.
             }
         }
-
-        log.info("Deleting {} clients ...", toDelete.size());
-        store.deleteAll(toDelete);
     }
 }

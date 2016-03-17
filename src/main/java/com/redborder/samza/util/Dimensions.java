@@ -15,6 +15,7 @@ public class Dimensions {
     public final static String T_LAST_SEEN = "t_last_seen";
     public final static String T_TRANSITION = "t_transition";
     public final static String DWELL_TIME = "dwell_time";
+    public final static String SESION = "dwell_time";
     public final static String TRANSITION = "transition";
     public final static String NEW_LOC = "new";
     public final static String OLD_LOC = "old";
@@ -23,6 +24,7 @@ public class Dimensions {
     public final static String TYPE = "type";
 
     public final static Long MINUTE = 60L;
+    public final static String UUID = "uuid";
 
     public final static String ZONE_UUID = "zone_uuid";
     public final static String SERVICE_PROVIDER_UUID = "service_provider_uuid";

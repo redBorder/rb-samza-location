@@ -11,16 +11,18 @@ import static com.redborder.samza.util.Dimensions.*;
 public class Location {
     private final Logger log = LoggerFactory.getLogger(getClass().getName());
 
-    Long consolidatedTime;
-    Long tGlobal;
-    Long tLastSeen;
-    Long tTransition;
-    Integer dWellTime;
-    String oldLoc;
-    String newLoc;
-    String consolidated;
-    String entrance;
-    String latLong;
+    public Long consolidatedTime;
+    public Long tGlobal;
+    public Long tLastSeen;
+    public Long tTransition;
+    public Integer dWellTime;
+    public String oldLoc;
+    public String newLoc;
+    public String consolidated;
+    public String entrance;
+    public String latLong;
+    public String uuidPrefix;
+    public Long uuid;
 
     enum LocationType {
         CAMPUS("campus"), BUILDING("building"), FLOOR("floor"), ZONE("zone");
@@ -33,7 +35,7 @@ public class Location {
     }
 
     public Location(Long consolidatedTime, Long tGlobal, Long tLastSeen, Long tTransition, String oldLoc, String newLoc,
-                    String consolidated, String entrance, String latLong) {
+                    String consolidated, String entrance, String latLong, String uuidPrefix) {
         this.consolidatedTime = consolidatedTime;
         this.tGlobal = tGlobal;
         this.tLastSeen = tLastSeen;
@@ -44,9 +46,11 @@ public class Location {
         this.entrance = entrance;
         this.dWellTime = 1;
         this.latLong = latLong;
+        this.uuidPrefix = uuidPrefix;
+        this.uuid = 0L;
     }
 
-    public Location(Long consolidatedTime, Map<String, Object> rawLocation) {
+    public Location(Long consolidatedTime, Map<String, Object> rawLocation, String uuidPrefix) {
         this.consolidatedTime = consolidatedTime;
         this.tGlobal = Utils.timestamp2Long(rawLocation.get(T_GLOBAL));
         this.tLastSeen = Utils.timestamp2Long(rawLocation.get(T_LAST_SEEN));
@@ -57,6 +61,8 @@ public class Location {
         this.consolidated = (String) rawLocation.get(CONSOLIDATED);
         this.entrance = (String) rawLocation.get(ENTRANCE);
         this.latLong = (String) rawLocation.get(LATLONG);
+        this.uuid = Utils.timestamp2Long(rawLocation.get(UUID));
+        this.uuidPrefix = uuidPrefix;
     }
 
     public List<Map<String, Object>> updateWithNewLocation(Location location, LocationType locationType) {
@@ -70,6 +76,7 @@ public class Location {
                     event.put(OLD_LOC, location.newLoc);
                     event.put(NEW_LOC, location.newLoc);
                     event.put(DWELL_TIME, dWellTime);
+                    event.put(SESION, String.format("%s-%s", uuidPrefix, uuid));
                     event.put(locationWithUuid(locationType), location.newLoc);
                     event.put(TYPE, locationType.type);
 
@@ -85,13 +92,13 @@ public class Location {
                 tLastSeen = location.tLastSeen;
             } else {
                 if (location.tLastSeen - tLastSeen >= consolidatedTime) {
-
                     // Check if it's the first move!
                     if (consolidated.equals("outside")) {
                         Map<String, Object> event = new HashMap<>();
                         event.put(TIMESTAMP, tGlobal);
                         event.put(OLD_LOC, consolidated);
                         event.put(NEW_LOC, entrance);
+                        event.put(SESION, String.format("%s-%s", uuidPrefix, uuid));
                         event.put(locationWithUuid(locationType), entrance);
                         event.put(TRANSITION, 1);
                         event.put(DWELL_TIME, 1);
@@ -112,6 +119,7 @@ public class Location {
                             event.put(TIMESTAMP, t);
                             event.put(OLD_LOC, consolidated);
                             event.put(NEW_LOC, consolidated);
+                            event.put(SESION, String.format("%s-%s", uuidPrefix, uuid));
                             event.put(DWELL_TIME, dWellTime);
                             event.put(locationWithUuid(locationType), consolidated);
                             event.put(TRANSITION, 0);
@@ -124,6 +132,9 @@ public class Location {
                             toSend.add(event);
                             dWellTime++;
                         }
+
+                        // Increasing the session uuid because this is new session
+                        uuid += 1;
                     }
 
                     dWellTime = 1;
@@ -133,6 +144,7 @@ public class Location {
                         event.put(TIMESTAMP, t);
                         event.put(OLD_LOC, consolidated);
                         event.put(NEW_LOC, location.newLoc);
+                        event.put(SESION, String.format("%s-%s", uuidPrefix, uuid));
                         event.put(locationWithUuid(locationType), location.newLoc);
                         event.put(DWELL_TIME, dWellTime);
                         event.put(TRANSITION, 1);
@@ -153,6 +165,7 @@ public class Location {
                         event.put(TIMESTAMP, t);
                         event.put(OLD_LOC, location.newLoc);
                         event.put(NEW_LOC, location.newLoc);
+                        event.put(SESION, String.format("%s-%s", uuidPrefix, uuid));
                         event.put(locationWithUuid(locationType), location.newLoc);
                         event.put(DWELL_TIME, dWellTime);
                         event.put(TRANSITION, 0);
@@ -203,6 +216,7 @@ public class Location {
         map.put(T_TRANSITION, tTransition);
         map.put(DWELL_TIME, dWellTime);
         map.put(OLD_LOC, oldLoc);
+        map.put(UUID, uuid);
         map.put(NEW_LOC, newLoc);
         map.put(CONSOLIDATED, consolidated);
         map.put(ENTRANCE, entrance);
