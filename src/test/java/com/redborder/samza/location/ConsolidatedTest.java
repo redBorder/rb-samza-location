@@ -27,7 +27,6 @@ public class ConsolidatedTest extends TestCase {
     private final Logger log = LoggerFactory.getLogger(getClass().getName());
     private static Long CONSOLIDATED_TIME = 3 * MINUTE;
     static List<Map<String, Object>> results;
-    static List<Map<String, Object>> results1;
 
     static Long T1 = 1000000000L;
     static Long T2 = 1000000200L;

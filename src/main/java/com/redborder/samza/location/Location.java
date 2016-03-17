@@ -12,6 +12,8 @@ public class Location {
     private final Logger log = LoggerFactory.getLogger(getClass().getName());
 
     public Long consolidatedTime;
+    public Long expiredTime;
+
     public Long tGlobal;
     public Long tLastSeen;
     public Long tTransition;
@@ -34,9 +36,10 @@ public class Location {
         }
     }
 
-    public Location(Long consolidatedTime, Long tGlobal, Long tLastSeen, Long tTransition, String oldLoc, String newLoc,
+    public Location(Long consolidatedTime, Long expiredTime, Long tGlobal, Long tLastSeen, Long tTransition, String oldLoc, String newLoc,
                     String consolidated, String entrance, String latLong, String uuidPrefix) {
         this.consolidatedTime = consolidatedTime;
+        this.expiredTime = expiredTime;
         this.tGlobal = tGlobal;
         this.tLastSeen = tLastSeen;
         this.tTransition = tTransition;
@@ -50,8 +53,9 @@ public class Location {
         this.uuid = 0L;
     }
 
-    public Location(Long consolidatedTime, Map<String, Object> rawLocation, String uuidPrefix) {
+    public Location(Long consolidatedTime, Long expiredTime, Map<String, Object> rawLocation, String uuidPrefix) {
         this.consolidatedTime = consolidatedTime;
+        this.expiredTime = expiredTime;
         this.tGlobal = Utils.timestamp2Long(rawLocation.get(T_GLOBAL));
         this.tLastSeen = Utils.timestamp2Long(rawLocation.get(T_LAST_SEEN));
         this.tTransition = Utils.timestamp2Long(rawLocation.get(T_TRANSITION));
@@ -67,6 +71,29 @@ public class Location {
 
     public List<Map<String, Object>> updateWithNewLocation(Location location, LocationType locationType) {
         List<Map<String, Object>> toSend = new LinkedList<>();
+
+        //Checking if the client is a new visit.
+        if(location.tLastSeen - tLastSeen >= expiredTime){
+            Map<String, Object> event = new HashMap<>();
+            event.put(TIMESTAMP, tLastSeen);
+            event.put(OLD_LOC, newLoc);
+            event.put(NEW_LOC, "outside");
+            event.put(DWELL_TIME, dWellTime);
+            event.put(SESION, String.format("%s-%s", uuidPrefix, uuid));
+            event.put(locationWithUuid(locationType), newLoc);
+            event.put(TYPE, locationType.type);
+            toSend.add(event);
+
+            tGlobal = location.tGlobal;
+            tLastSeen = location.tLastSeen;
+            tTransition = location.tTransition;
+            oldLoc = location.oldLoc;
+            newLoc = location.newLoc;
+            consolidated = location.consolidated;
+            entrance = location.entrance;
+            dWellTime = location.dWellTime;
+            latLong = location.latLong;
+        }
 
         if (newLoc.equals(location.newLoc)) {
             if (consolidated.equals(location.newLoc)) {
