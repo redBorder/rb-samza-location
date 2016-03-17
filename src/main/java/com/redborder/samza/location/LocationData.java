@@ -23,20 +23,21 @@ public class LocationData {
 
     public List<Map<String, Object>> updateWithNewLocationData(LocationData locationData) {
         List<Map<String, Object>> toSend = new LinkedList<>();
+        tGlobalLastSeen = locationData.tGlobalLastSeen;
 
-        if (campus != null) {
+        if (campus != null && locationData.campus != null) {
             toSend.addAll(campus.updateWithNewLocation(locationData.campus, Location.LocationType.CAMPUS));
         }
 
-        if (building != null) {
+        if (building != null && locationData.building != null) {
             toSend.addAll(building.updateWithNewLocation(locationData.building, Location.LocationType.BUILDING));
         }
 
-        if (floor != null) {
+        if (floor != null && locationData.floor != null) {
             toSend.addAll(floor.updateWithNewLocation(locationData.floor, Location.LocationType.FLOOR));
         }
 
-        if (zone != null) {
+        if (zone != null && locationData.zone != null) {
             toSend.addAll(zone.updateWithNewLocation(locationData.zone, Location.LocationType.ZONE));
         }
 
@@ -85,28 +86,29 @@ public class LocationData {
 
     public static LocationData locationFromMessage(Long consolidatedTime, Map<String, Object> rawData) {
         Long timestamp = Utils.timestamp2Long(rawData.get(TIMESTAMP));
+        String latLong = (String) rawData.get(LATLONG);
 
         LocationData.Builder builder = new LocationData.Builder();
         builder.timestamp(timestamp);
 
         String campus = (String) rawData.get(CAMPUS);
         if (campus != null) {
-            builder.withCampus(new Campus(consolidatedTime, timestamp, timestamp, timestamp, "N/A", campus, "N/A", campus));
+            builder.withCampus(new Campus(consolidatedTime, timestamp, timestamp, timestamp, "outside", campus, "outside", campus, latLong));
         }
 
         String building = (String) rawData.get(BUILDING);
         if (building != null) {
-            builder.withBuilding(new Building(consolidatedTime, timestamp, timestamp, timestamp, "N/A", building, "N/A", building));
+            builder.withBuilding(new Building(consolidatedTime, timestamp, timestamp, timestamp, "outside", building, "outside", building, latLong));
         }
 
         String floor = (String) rawData.get(FLOOR);
         if (floor != null) {
-            builder.withFloor(new Floor(consolidatedTime, timestamp, timestamp, timestamp, "N/A", floor, "N/A", floor));
+            builder.withFloor(new Floor(consolidatedTime, timestamp, timestamp, timestamp, "outside", floor, "outside", floor, latLong));
         }
 
         String zone = (String) rawData.get(ZONE);
         if (zone != null) {
-            builder.withZone(new Zone(consolidatedTime, timestamp, timestamp, timestamp, "N/A", zone, "N/A", zone));
+            builder.withZone(new Zone(consolidatedTime, timestamp, timestamp, timestamp, "outside", zone, "outside", zone, latLong));
         }
 
         return builder.build();

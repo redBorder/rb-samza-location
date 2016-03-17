@@ -23,4 +23,16 @@ public class Dimensions {
     public final static String TYPE = "type";
 
     public final static Long MINUTE = 60L;
+
+    public final static String ZONE_UUID = "zone_uuid";
+    public final static String SERVICE_PROVIDER_UUID = "service_provider_uuid";
+    public final static String BUILDING_UUID = "building_uuid";
+    public final static String CAMPUS_UUID = "campus_uuid";
+    public final static String FLOOR_UUID = "floor_uuid";
+    public final static String DEPLOYMENT_UUID = "deployment_uuid";
+    public final static String NAMESPACE_UUID = "namespace_uuid";
+    public final static String SENSOR_UUID = "sensor_uuid";
+    public final static String MARKET_UUID = "market_uuid";
+    public final static String ORGANIZATION_UUID = "organization_uuid";
+    public final static String LATLONG = "client_latlong";
 }

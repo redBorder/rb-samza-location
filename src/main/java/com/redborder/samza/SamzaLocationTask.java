@@ -9,25 +9,27 @@ import org.apache.samza.system.IncomingMessageEnvelope;
 import org.apache.samza.system.OutgoingMessageEnvelope;
 import org.apache.samza.system.SystemStream;
 import org.apache.samza.task.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
 import static com.redborder.samza.util.Dimensions.*;
 
 public class SamzaLocationTask implements StreamTask, InitableTask, WindowableTask {
-
+    private final Logger log = LoggerFactory.getLogger(getClass().getName());
     final SystemStream systemStream = new SystemStream("kafka", "rb_loc_post");
     KeyValueStore<String, Map<String, Object>> store;
     Long consolidatedTime;
     Long expiredTime;
-    List<String> dimToEnrich;
+    List<String> dimToEnrich = Arrays.asList(MARKET_UUID, ORGANIZATION_UUID, ZONE_UUID, NAMESPACE_UUID,
+            DEPLOYMENT_UUID, SENSOR_UUID, NAMESPACE, SERVICE_PROVIDER_UUID, BUILDING_UUID, CAMPUS_UUID, FLOOR_UUID);
 
     @Override
     public void init(Config config, TaskContext taskContext) throws Exception {
         this.store = (KeyValueStore<String, Map<String, Object>>) taskContext.getStore("location");
         this.consolidatedTime = config.getLong("redborder.location.consolidatedTime", 3 * MINUTE);
         this.expiredTime = config.getLong("redborder.location.expiredTime", 30 * MINUTE);
-        this.dimToEnrich = config.getList("redborder.location.dimToEnrich", Collections.<String>emptyList());
     }
 
     @Override
@@ -43,21 +45,29 @@ public class SamzaLocationTask implements StreamTask, InitableTask, WindowableTa
             LocationData currentLocation = LocationData.locationFromMessage(consolidatedTime, message);
             Map<String, Object> cacheData = store.get(id);
 
+            log.info("Detected client with ID[{}] and with current data [{}] and cached data [" + cacheData + "]", id, currentLocation.toMap());
+
             if (cacheData != null) {
                 LocationData cacheLocation = LocationData.locationFromCache(consolidatedTime, cacheData);
                 events.addAll(cacheLocation.updateWithNewLocationData(currentLocation));
-                store.put(id, cacheLocation.toMap());
+                Map<String, Object> locationMap = cacheLocation.toMap();
+                store.put(id, locationMap);
+                log.info("Updating client ID[{}] with data [{}]", id, locationMap);
             } else {
-                store.put(id, currentLocation.toMap());
+                Map<String, Object> locationMap = currentLocation.toMap();
+                store.put(id, locationMap);
+                log.info("Creating client ID[{}] with data [{}]", id, locationMap);
             }
 
 
             for (Map<String, Object> event : events) {
                 event.put(CLIENT, client);
                 for (String dim : dimToEnrich) {
-                    Object dimValue = message.get(dim);
-                    if (dimValue != null) {
-                        event.put(dim, dimValue);
+                    if (!event.containsKey(dim)) {
+                        Object dimValue = message.get(dim);
+                        if (dimValue != null) {
+                            event.put(dim, dimValue);
+                        }
                     }
                 }
 
@@ -73,15 +83,16 @@ public class SamzaLocationTask implements StreamTask, InitableTask, WindowableTa
 
         List<String> toDelete = new ArrayList<>();
 
-        while (iter.hasNext()){
+        while (iter.hasNext()) {
             Entry<String, Map<String, Object>> entry = iter.next();
             LocationData locationData = LocationData.locationFromCache(consolidatedTime, entry.getValue());
 
-            if(currentTime - locationData.tGlobalLastSeen >= expiredTime){
+            if (currentTime - locationData.tGlobalLastSeen >= expiredTime) {
                 toDelete.add(entry.getKey());
             }
         }
 
+        log.info("Deleting {} clients ...", toDelete.size());
         store.deleteAll(toDelete);
     }
 }

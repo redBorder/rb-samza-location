@@ -20,6 +20,7 @@ public class Location {
     String newLoc;
     String consolidated;
     String entrance;
+    String latLong;
 
     enum LocationType {
         CAMPUS("campus"), BUILDING("building"), FLOOR("floor"), ZONE("zone");
@@ -32,7 +33,7 @@ public class Location {
     }
 
     public Location(Long consolidatedTime, Long tGlobal, Long tLastSeen, Long tTransition, String oldLoc, String newLoc,
-                    String consolidated, String entrance) {
+                    String consolidated, String entrance, String latLong) {
         this.consolidatedTime = consolidatedTime;
         this.tGlobal = tGlobal;
         this.tLastSeen = tLastSeen;
@@ -42,6 +43,7 @@ public class Location {
         this.consolidated = consolidated;
         this.entrance = entrance;
         this.dWellTime = 1;
+        this.latLong = latLong;
     }
 
     public Location(Long consolidatedTime, Map<String, Object> rawLocation) {
@@ -54,6 +56,7 @@ public class Location {
         this.newLoc = (String) rawLocation.get(NEW_LOC);
         this.consolidated = (String) rawLocation.get(CONSOLIDATED);
         this.entrance = (String) rawLocation.get(ENTRANCE);
+        this.latLong = (String) rawLocation.get(LATLONG);
     }
 
     public List<Map<String, Object>> updateWithNewLocation(Location location, LocationType locationType) {
@@ -67,25 +70,37 @@ public class Location {
                     event.put(OLD_LOC, location.newLoc);
                     event.put(NEW_LOC, location.newLoc);
                     event.put(DWELL_TIME, dWellTime);
+                    event.put(locationWithUuid(locationType), location.newLoc);
                     event.put(TYPE, locationType.type);
+
+                    if (location.latLong != null) {
+                        event.put(LATLONG, location.latLong);
+                    }
+
                     toSend.add(event);
                     dWellTime++;
                 }
 
-                log.info("Consolidated state, sending [{}] events", toSend.size());
+                log.debug("Consolidated state, sending [{}] events", toSend.size());
                 tLastSeen = location.tLastSeen;
             } else {
                 if (location.tLastSeen - tLastSeen >= consolidatedTime) {
 
                     // Check if it's the first move!
-                    if (consolidated.equals("N/A")) {
+                    if (consolidated.equals("outside")) {
                         Map<String, Object> event = new HashMap<>();
                         event.put(TIMESTAMP, tGlobal);
                         event.put(OLD_LOC, consolidated);
                         event.put(NEW_LOC, entrance);
+                        event.put(locationWithUuid(locationType), entrance);
                         event.put(TRANSITION, 1);
                         event.put(DWELL_TIME, 1);
                         event.put(TYPE, locationType.type);
+
+                        if (location.latLong != null) {
+                            event.put(LATLONG, latLong);
+                        }
+
                         toSend.add(event);
 
                         consolidated = entrance;
@@ -98,8 +113,14 @@ public class Location {
                             event.put(OLD_LOC, consolidated);
                             event.put(NEW_LOC, consolidated);
                             event.put(DWELL_TIME, dWellTime);
+                            event.put(locationWithUuid(locationType), consolidated);
                             event.put(TRANSITION, 0);
                             event.put(TYPE, locationType.type);
+
+                            if (location.latLong != null) {
+                                event.put(LATLONG, latLong);
+                            }
+
                             toSend.add(event);
                             dWellTime++;
                         }
@@ -112,9 +133,15 @@ public class Location {
                         event.put(TIMESTAMP, t);
                         event.put(OLD_LOC, consolidated);
                         event.put(NEW_LOC, location.newLoc);
+                        event.put(locationWithUuid(locationType), location.newLoc);
                         event.put(DWELL_TIME, dWellTime);
                         event.put(TRANSITION, 1);
                         event.put(TYPE, locationType.type);
+
+                        if (location.latLong != null) {
+                            event.put(LATLONG, location.latLong);
+                        }
+
                         toSend.add(event);
                         dWellTime++;
                     }
@@ -126,14 +153,20 @@ public class Location {
                         event.put(TIMESTAMP, t);
                         event.put(OLD_LOC, location.newLoc);
                         event.put(NEW_LOC, location.newLoc);
+                        event.put(locationWithUuid(locationType), location.newLoc);
                         event.put(DWELL_TIME, dWellTime);
                         event.put(TRANSITION, 0);
                         event.put(TYPE, locationType.type);
+
+                        if (location.latLong != null) {
+                            event.put(LATLONG, location.latLong);
+                        }
+
                         toSend.add(event);
                         dWellTime++;
                     }
 
-                    log.info("Consolidating state, sending [{}] events", toSend.size());
+                    log.debug("Consolidating state, sending [{}] events", toSend.size());
 
                     tGlobal = location.tLastSeen;
                     tLastSeen = location.tLastSeen;
@@ -141,14 +174,15 @@ public class Location {
                     oldLoc = location.newLoc;
                     newLoc = location.newLoc;
                     consolidated = location.newLoc;
+                    latLong = location.latLong;
                 } else {
-                    log.info("Trying to consolidate state, but {}",
+                    log.debug("Trying to consolidate state, but {}",
                             String.format("location.tLastSeen[%s] - tLastSeen[%s] < consolidatedTime[%s]",
                                     location.tLastSeen, tLastSeen, consolidatedTime));
                 }
             }
         } else {
-            log.info("Moving from [{}] to [{}]", newLoc, location.newLoc);
+            log.debug("Moving from [{}] to [{}]", newLoc, location.newLoc);
             tLastSeen = location.tLastSeen;
             oldLoc = newLoc;
             newLoc = location.newLoc;
@@ -172,6 +206,15 @@ public class Location {
         map.put(NEW_LOC, newLoc);
         map.put(CONSOLIDATED, consolidated);
         map.put(ENTRANCE, entrance);
+
+        if (latLong != null) {
+            map.put(LATLONG, latLong);
+        }
+
         return map;
+    }
+
+    private String locationWithUuid(LocationType type) {
+        return type.type + "_uuid";
     }
 }

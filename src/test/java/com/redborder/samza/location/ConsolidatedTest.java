@@ -122,22 +122,22 @@ public class ConsolidatedTest extends TestCase {
 
             if (result.get(TIMESTAMP).equals(T1)) {
                 if (result.get(TYPE).equals(Location.LocationType.CAMPUS.type)) {
-                    assertEquals("N/A", result.get(OLD_LOC));
+                    assertEquals("outside", result.get(OLD_LOC));
                     assertEquals("C1", result.get(NEW_LOC));
                 }
 
                 if (result.get(TYPE).equals(Location.LocationType.BUILDING.type)) {
-                    assertEquals("N/A", result.get(OLD_LOC));
+                    assertEquals("outside", result.get(OLD_LOC));
                     assertEquals("B1", result.get(NEW_LOC));
                 }
 
                 if (result.get(TYPE).equals(Location.LocationType.FLOOR.type)) {
-                    assertEquals("N/A", result.get(OLD_LOC));
+                    assertEquals("outside", result.get(OLD_LOC));
                     assertEquals("F1", result.get(NEW_LOC));
                 }
 
                 if (result.get(TYPE).equals(Location.LocationType.ZONE.type)) {
-                    assertEquals("N/A", result.get(OLD_LOC));
+                    assertEquals("outside", result.get(OLD_LOC));
                     assertEquals("Z1", result.get(NEW_LOC));
                 }
             } else {
