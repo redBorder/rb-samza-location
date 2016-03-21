@@ -1,5 +1,7 @@
 package com.redborder.samza.util;
 
+import org.apache.commons.math3.exception.NotANumberException;
+
 public class Utils {
     public static Long timestamp2Long(Object timestamp) {
         Long result;
@@ -27,8 +29,10 @@ public class Utils {
                 result = ((Integer) l).longValue();
             } else if (l instanceof Long) {
                 result = (Long) l;
+            } else if (l instanceof String) {
+                result = Long.valueOf((String) l);
             } else {
-                result = 0L;
+                throw new NotANumberException();
             }
         } else {
             result = 0L;
