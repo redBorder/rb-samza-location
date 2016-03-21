@@ -1,5 +1,6 @@
 package com.redborder.samza;
 
+import com.google.common.collect.Lists;
 import com.redborder.samza.location.Location;
 import com.redborder.samza.location.LocationData;
 import org.apache.samza.config.Config;
@@ -23,8 +24,16 @@ public class SamzaLocationTask implements StreamTask, InitableTask, WindowableTa
     KeyValueStore<String, Map<String, Object>> store;
     Long consolidatedTime;
     Long expiredTime;
-    List<String> dimToEnrich = Arrays.asList(MARKET_UUID, ORGANIZATION_UUID, ZONE_UUID, NAMESPACE_UUID,
-            DEPLOYMENT_UUID, SENSOR_UUID, NAMESPACE, SERVICE_PROVIDER_UUID, BUILDING_UUID, CAMPUS_UUID, FLOOR_UUID);
+    List<String> dimToEnrich = Lists.newArrayList(
+            // Base dimensions
+            MARKET_UUID, ORGANIZATION_UUID, ZONE_UUID, NAMESPACE_UUID,
+            DEPLOYMENT_UUID, SENSOR_UUID, NAMESPACE, SERVICE_PROVIDER_UUID, BUILDING_UUID, CAMPUS_UUID, FLOOR_UUID,
+
+            // Extra dimensions
+            STATUS
+    );
+
+
 
     @Override
     public void init(Config config, TaskContext taskContext) throws Exception {

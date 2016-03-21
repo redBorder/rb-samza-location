@@ -37,4 +37,7 @@ public class Dimensions {
     public final static String MARKET_UUID = "market_uuid";
     public final static String ORGANIZATION_UUID = "organization_uuid";
     public final static String LATLONG = "client_latlong";
+
+    // Extra
+    public final static String STATUS = "dot11_status";
 }
