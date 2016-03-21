@@ -46,18 +46,18 @@ public class SamzaLocationTask implements StreamTask, InitableTask, WindowableTa
             LocationData currentLocation = LocationData.locationFromMessage(consolidatedTime, expiredTime, message, id);
             Map<String, Object> cacheData = store.get(id);
 
-            log.info("Detected client with ID[{}] and with current data [{}] and cached data [" + cacheData + "]", id, currentLocation.toMap());
+            log.debug("Detected client with ID[{}] and with current data [{}] and cached data [" + cacheData + "]", id, currentLocation.toMap());
 
             if (cacheData != null) {
                 LocationData cacheLocation = LocationData.locationFromCache(consolidatedTime, expiredTime, cacheData, id);
                 events.addAll(cacheLocation.updateWithNewLocationData(currentLocation));
                 Map<String, Object> locationMap = cacheLocation.toMap();
                 store.put(id, locationMap);
-                log.info("Updating client ID[{}] with data [{}]", id, locationMap);
+                log.debug("Updating client ID[{}] with data [{}]", id, locationMap);
             } else {
                 Map<String, Object> locationMap = currentLocation.toMap();
                 store.put(id, locationMap);
-                log.info("Creating client ID[{}] with data [{}]", id, locationMap);
+                log.debug("Creating client ID[{}] with data [{}]", id, locationMap);
             }
 
 
