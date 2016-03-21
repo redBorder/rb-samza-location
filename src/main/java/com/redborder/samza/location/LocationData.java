@@ -27,18 +27,26 @@ public class LocationData {
 
         if (campus != null && locationData.campus != null) {
             toSend.addAll(campus.updateWithNewLocation(locationData.campus, Location.LocationType.CAMPUS));
+        } else if (locationData.campus != null) {
+            campus = locationData.campus;
         }
 
         if (building != null && locationData.building != null) {
             toSend.addAll(building.updateWithNewLocation(locationData.building, Location.LocationType.BUILDING));
+        } else if (locationData.building != null) {
+            building = locationData.building;
         }
 
         if (floor != null && locationData.floor != null) {
             toSend.addAll(floor.updateWithNewLocation(locationData.floor, Location.LocationType.FLOOR));
+        } else if (locationData.floor != null) {
+            floor = locationData.floor;
         }
 
         if (zone != null && locationData.zone != null) {
             toSend.addAll(zone.updateWithNewLocation(locationData.zone, Location.LocationType.ZONE));
+        } else if (locationData.zone != null) {
+            zone = locationData.zone;
         }
 
         return toSend;
@@ -121,7 +129,7 @@ public class LocationData {
         Floor floor;
         Zone zone;
 
-        public void timestamp(Long timestamp){
+        public void timestamp(Long timestamp) {
             this.tGlobalLastSeen = timestamp;
         }
 
