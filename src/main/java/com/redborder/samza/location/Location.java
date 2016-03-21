@@ -93,6 +93,7 @@ public class Location {
             entrance = location.entrance;
             dWellTime = location.dWellTime;
             latLong = location.latLong;
+            uuid += 1;
         }
 
         if (newLoc.equals(location.newLoc)) {

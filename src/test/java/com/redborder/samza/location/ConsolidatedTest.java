@@ -54,6 +54,7 @@ public class ConsolidatedTest extends TestCase {
         message.put(BUILDING, "B1");
         message.put(FLOOR, "F1");
         message.put(ZONE, "Z1");
+        message.put(LATLONG, "-33.84882,151.06793");
 
         IncomingMessageEnvelope envelope = new IncomingMessageEnvelope(
                 new SystemStreamPartition("kafka", "rb_location", new Partition(0)), "OFFSET", "KEY", message);
@@ -68,6 +69,7 @@ public class ConsolidatedTest extends TestCase {
         message1.put(BUILDING, "B1");
         message1.put(FLOOR, "F1");
         message1.put(ZONE, "Z1");
+        message1.put(LATLONG, "-33.84882,151.06793");
 
         IncomingMessageEnvelope envelope1 = new IncomingMessageEnvelope(
                 new SystemStreamPartition("kafka", "rb_location", new Partition(0)), "OFFSET", "KEY", message1);
@@ -82,6 +84,7 @@ public class ConsolidatedTest extends TestCase {
         message2.put(BUILDING, "B1");
         message2.put(FLOOR, "F1");
         message2.put(ZONE, "Z1");
+        message2.put(LATLONG, "-33.84882,151.06793");
 
         IncomingMessageEnvelope envelope2 = new IncomingMessageEnvelope(
                 new SystemStreamPartition("kafka", "rb_location", new Partition(0)), "OFFSET", "KEY", message2);

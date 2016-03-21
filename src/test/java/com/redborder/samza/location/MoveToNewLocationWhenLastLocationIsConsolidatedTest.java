@@ -61,6 +61,7 @@ public class MoveToNewLocationWhenLastLocationIsConsolidatedTest extends TestCas
         message.put(BUILDING, "B1");
         message.put(FLOOR, "F1");
         message.put(ZONE, "Z1");
+        message.put(LATLONG, "-50.84882,19.06793");
 
         IncomingMessageEnvelope envelope = new IncomingMessageEnvelope(
                 new SystemStreamPartition("kafka", "rb_location", new Partition(0)), "OFFSET", "KEY", message);
@@ -75,6 +76,7 @@ public class MoveToNewLocationWhenLastLocationIsConsolidatedTest extends TestCas
         message1.put(BUILDING, "B1");
         message1.put(FLOOR, "F2");
         message1.put(ZONE, "Z3");
+        message1.put(LATLONG, "-120.84882,30.06793");
 
         IncomingMessageEnvelope envelope1 = new IncomingMessageEnvelope(
                 new SystemStreamPartition("kafka", "rb_location", new Partition(0)), "OFFSET", "KEY", message1);
@@ -89,6 +91,7 @@ public class MoveToNewLocationWhenLastLocationIsConsolidatedTest extends TestCas
         message2.put(BUILDING, "B1");
         message2.put(FLOOR, "F2");
         message2.put(ZONE, "Z3");
+        message2.put(LATLONG, "-120.84882,30.06793");
 
         IncomingMessageEnvelope envelope2 = new IncomingMessageEnvelope(
                 new SystemStreamPartition("kafka", "rb_location", new Partition(0)), "OFFSET", "KEY", message2);
@@ -103,6 +106,7 @@ public class MoveToNewLocationWhenLastLocationIsConsolidatedTest extends TestCas
         message3.put(BUILDING, "B1");
         message3.put(FLOOR, "F2");
         message3.put(ZONE, "Z5");
+        message3.put(LATLONG, "-1.84882,100.06793");
 
         IncomingMessageEnvelope envelope3 = new IncomingMessageEnvelope(
                 new SystemStreamPartition("kafka", "rb_location", new Partition(0)), "OFFSET", "KEY", message3);
@@ -117,6 +121,7 @@ public class MoveToNewLocationWhenLastLocationIsConsolidatedTest extends TestCas
         message4.put(BUILDING, "B1");
         message4.put(FLOOR, "F2");
         message4.put(ZONE, "Z5");
+        message4.put(LATLONG, "-1.84882,100.06793");
 
         IncomingMessageEnvelope envelope4 = new IncomingMessageEnvelope(
                 new SystemStreamPartition("kafka", "rb_location", new Partition(0)), "OFFSET", "KEY", message4);
@@ -132,10 +137,14 @@ public class MoveToNewLocationWhenLastLocationIsConsolidatedTest extends TestCas
                 if (result.get(TIMESTAMP).equals(T1)) {
                     assertEquals("outside", result.get(OLD_LOC));
                     assertEquals("C1", result.get(NEW_LOC));
+                    assertEquals("-50.84882,19.06793", result.get(LATLONG));
                 } else {
                     assertEquals("C1", result.get(OLD_LOC));
                     assertEquals("C1", result.get(NEW_LOC));
-                }
+                    assertTrue(
+                            "-1.84882,100.06793".equals(result.get(LATLONG))
+                                    || "-120.84882,30.06793".equals(result.get(LATLONG))
+                    );                }
             }
         }
     }
@@ -147,10 +156,14 @@ public class MoveToNewLocationWhenLastLocationIsConsolidatedTest extends TestCas
                 if (result.get(TIMESTAMP).equals(T1)) {
                     assertEquals("outside", result.get(OLD_LOC));
                     assertEquals("B1", result.get(NEW_LOC));
+                    assertEquals("-50.84882,19.06793", result.get(LATLONG));
                 } else {
                     assertEquals("B1", result.get(OLD_LOC));
                     assertEquals("B1", result.get(NEW_LOC));
-                }
+                    assertTrue(
+                            "-1.84882,100.06793".equals(result.get(LATLONG))
+                                    || "-120.84882,30.06793".equals(result.get(LATLONG))
+                    );                }
             }
         }
     }
@@ -162,12 +175,18 @@ public class MoveToNewLocationWhenLastLocationIsConsolidatedTest extends TestCas
                 if (result.get(TIMESTAMP).equals(T1)) {
                     assertEquals("outside", result.get(OLD_LOC));
                     assertEquals("F1", result.get(NEW_LOC));
+                    assertEquals("-50.84882,19.06793", result.get(LATLONG));
                 } else if (result.get(TIMESTAMP).equals(T2)) {
                     assertEquals("F1", result.get(OLD_LOC));
                     assertEquals("F2", result.get(NEW_LOC));
+                    assertEquals("-120.84882,30.06793", result.get(LATLONG));
                 } else {
                     assertEquals("F2", result.get(OLD_LOC));
                     assertEquals("F2", result.get(NEW_LOC));
+                    assertTrue(
+                            "-1.84882,100.06793".equals(result.get(LATLONG))
+                                    || "-120.84882,30.06793".equals(result.get(LATLONG))
+                    );
                 }
             }
         }
@@ -175,26 +194,30 @@ public class MoveToNewLocationWhenLastLocationIsConsolidatedTest extends TestCas
 
     @Test
     public void checkZone() throws Exception {
-        log.info("{}", results);
         for (Map<String, Object> result : results) {
             if (result.get(TYPE).equals(Location.LocationType.ZONE.type)) {
                 if (result.get(TIMESTAMP).equals(T1)) {
                     assertEquals("outside", result.get(OLD_LOC));
                     assertEquals("Z1", result.get(NEW_LOC));
+                    assertEquals("-50.84882,19.06793", result.get(LATLONG));
                 } else if (result.get(TIMESTAMP).equals(T2)) {
                     assertEquals("Z1", result.get(OLD_LOC));
                     assertEquals("Z3", result.get(NEW_LOC));
+                    assertEquals("-120.84882,30.06793", result.get(LATLONG));
                 } else if (Utils.timestamp2Long(result.get(TIMESTAMP)) >= T3
                         && Utils.timestamp2Long(result.get(TIMESTAMP)) < T4) {
                     assertEquals("Z3", result.get(OLD_LOC));
                     assertEquals("Z3", result.get(NEW_LOC));
+                    assertEquals("-120.84882,30.06793", result.get(LATLONG));
                 } else if (result.get(TIMESTAMP).equals(T4)) {
                     assertEquals("Z3", result.get(OLD_LOC));
                     assertEquals("Z5", result.get(NEW_LOC));
+                    assertEquals("-1.84882,100.06793", result.get(LATLONG));
                 } else if (Utils.timestamp2Long(result.get(TIMESTAMP)) >= T4
                         && Utils.timestamp2Long(result.get(TIMESTAMP)) < T5) {
                     assertEquals("Z5", result.get(OLD_LOC));
                     assertEquals("Z5", result.get(NEW_LOC));
+                    assertEquals("-1.84882,100.06793", result.get(LATLONG));
                 }
             }
         }

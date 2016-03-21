@@ -57,6 +57,7 @@ public class FirstEntranceTest extends TestCase{
         message.put(BUILDING, "B1");
         message.put(FLOOR, "F1");
         message.put(ZONE, "Z1");
+        message.put(LATLONG, "-50.84882,19.06793");
 
         results = collector.getResult();
     }

@@ -60,6 +60,7 @@ public class FirstEntranceConsolidatedDifferentZoneTest extends TestCase {
         message.put(BUILDING, "B1");
         message.put(FLOOR, "F1");
         message.put(ZONE, "Z1");
+        message.put(LATLONG, "-33.84882,151.06793");
 
         IncomingMessageEnvelope envelope = new IncomingMessageEnvelope(
                 new SystemStreamPartition("kafka", "rb_location", new Partition(0)), "OFFSET", "KEY", message);
@@ -74,6 +75,7 @@ public class FirstEntranceConsolidatedDifferentZoneTest extends TestCase {
         message1.put(BUILDING, "B1");
         message1.put(FLOOR, "F2");
         message1.put(ZONE, "Z3");
+        message1.put(LATLONG, "-31.84882,120.06793");
 
         IncomingMessageEnvelope envelope1 = new IncomingMessageEnvelope(
                 new SystemStreamPartition("kafka", "rb_location", new Partition(0)), "OFFSET", "KEY", message1);
@@ -88,6 +90,7 @@ public class FirstEntranceConsolidatedDifferentZoneTest extends TestCase {
         message2.put(BUILDING, "B1");
         message2.put(FLOOR, "F3");
         message2.put(ZONE, "Z5");
+        message2.put(LATLONG, "-50.84882,19.06793");
 
         IncomingMessageEnvelope envelope2 = new IncomingMessageEnvelope(
                 new SystemStreamPartition("kafka", "rb_location", new Partition(0)), "OFFSET", "KEY", message2);
@@ -102,6 +105,7 @@ public class FirstEntranceConsolidatedDifferentZoneTest extends TestCase {
         message3.put(BUILDING, "B1");
         message3.put(FLOOR, "F3");
         message3.put(ZONE, "Z5");
+        message3.put(LATLONG, "-50.84882,19.06793");
 
         IncomingMessageEnvelope envelope3 = new IncomingMessageEnvelope(
                 new SystemStreamPartition("kafka", "rb_location", new Partition(0)), "OFFSET", "KEY", message3);
@@ -117,9 +121,11 @@ public class FirstEntranceConsolidatedDifferentZoneTest extends TestCase {
                 if (result.get(TIMESTAMP).equals(T1)) {
                     assertEquals("outside", result.get(OLD_LOC));
                     assertEquals("C1", result.get(NEW_LOC));
+                    assertEquals("-33.84882,151.06793", result.get(LATLONG));
                 } else {
                     assertEquals("C1", result.get(OLD_LOC));
                     assertEquals("C1", result.get(NEW_LOC));
+                    assertEquals("-50.84882,19.06793", result.get(LATLONG));
                 }
             }
         }
@@ -132,9 +138,11 @@ public class FirstEntranceConsolidatedDifferentZoneTest extends TestCase {
                 if (result.get(TIMESTAMP).equals(T1)) {
                     assertEquals("outside", result.get(OLD_LOC));
                     assertEquals("B1", result.get(NEW_LOC));
+                    assertEquals("-33.84882,151.06793", result.get(LATLONG));
                 } else {
                     assertEquals("B1", result.get(OLD_LOC));
                     assertEquals("B1", result.get(NEW_LOC));
+                    assertEquals("-50.84882,19.06793", result.get(LATLONG));
                 }
             }
         }
@@ -147,12 +155,15 @@ public class FirstEntranceConsolidatedDifferentZoneTest extends TestCase {
                 if (result.get(TIMESTAMP).equals(T1)) {
                     assertEquals("outside", result.get(OLD_LOC));
                     assertEquals("F1", result.get(NEW_LOC));
+                    assertEquals("-33.84882,151.06793", result.get(LATLONG));
                 } else if (result.get(TIMESTAMP).equals(T2) || result.get(TIMESTAMP).equals(T3)) {
                     assertEquals("F1", result.get(OLD_LOC));
                     assertEquals("F3", result.get(NEW_LOC));
+                    assertEquals("-50.84882,19.06793", result.get(LATLONG));
                 } else {
                     assertEquals("F3", result.get(OLD_LOC));
                     assertEquals("F3", result.get(NEW_LOC));
+                    assertEquals("-50.84882,19.06793", result.get(LATLONG));
                 }
             }
         }
@@ -165,12 +176,15 @@ public class FirstEntranceConsolidatedDifferentZoneTest extends TestCase {
                 if (result.get(TIMESTAMP).equals(T1)) {
                     assertEquals("outside", result.get(OLD_LOC));
                     assertEquals("Z1", result.get(NEW_LOC));
+                    assertEquals("-33.84882,151.06793", result.get(LATLONG));
                 } else if (result.get(TIMESTAMP).equals(T2) || result.get(TIMESTAMP).equals(T3)) {
                     assertEquals("Z1", result.get(OLD_LOC));
                     assertEquals("Z5", result.get(NEW_LOC));
+                    assertEquals("-50.84882,19.06793", result.get(LATLONG));
                 } else {
                     assertEquals("Z5", result.get(OLD_LOC));
                     assertEquals("Z5", result.get(NEW_LOC));
+                    assertEquals("-50.84882,19.06793", result.get(LATLONG));
                 }
             }
         }
