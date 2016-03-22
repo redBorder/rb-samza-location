@@ -20,11 +20,11 @@ import static com.redborder.samza.util.Dimensions.*;
 
 public class SamzaLocationTask implements StreamTask, InitableTask, WindowableTask {
     private final Logger log = LoggerFactory.getLogger(getClass().getName());
-    final SystemStream systemStream = new SystemStream("kafka", "rb_loc_post");
-    KeyValueStore<String, Map<String, Object>> store;
-    Long consolidatedTime;
-    Long expiredTime;
-    List<String> dimToEnrich = Lists.newArrayList(
+    private final SystemStream systemStream = new SystemStream("kafka", "rb_loc_post");
+    private KeyValueStore<String, Map<String, Object>> store;
+    private Long consolidatedTime;
+    private Long expiredTime;
+    private List<String> dimToEnrich = Lists.newArrayList(
             // Base dimensions
             MARKET_UUID, ORGANIZATION_UUID, ZONE_UUID, NAMESPACE_UUID,
             DEPLOYMENT_UUID, SENSOR_UUID, NAMESPACE, SERVICE_PROVIDER_UUID, BUILDING_UUID, CAMPUS_UUID, FLOOR_UUID,
