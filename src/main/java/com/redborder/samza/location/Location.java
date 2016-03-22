@@ -79,6 +79,7 @@ public class Location {
             event.put(OLD_LOC, newLoc);
             event.put(NEW_LOC, "outside");
             event.put(DWELL_TIME, dWellTime);
+            event.put(TRANSITION, 1);
             event.put(SESSION, String.format("%s-%s", uuidPrefix, uuid));
             event.put(locationWithUuid(locationType), newLoc);
             event.put(TYPE, locationType.type);
@@ -103,6 +104,7 @@ public class Location {
                     event.put(TIMESTAMP, t);
                     event.put(OLD_LOC, location.newLoc);
                     event.put(NEW_LOC, location.newLoc);
+                    event.put(TRANSITION, 0);
                     event.put(DWELL_TIME, dWellTime);
                     event.put(SESSION, String.format("%s-%s", uuidPrefix, uuid));
                     event.put(locationWithUuid(locationType), location.newLoc);
