@@ -122,34 +122,34 @@ public class LocationData {
         return builder.build();
     }
 
-    public static class Builder {
+    private static class Builder {
         Long tGlobalLastSeen;
         Campus campus;
         Building building;
         Floor floor;
         Zone zone;
 
-        public void timestamp(Long timestamp) {
+        void timestamp(Long timestamp) {
             this.tGlobalLastSeen = timestamp;
         }
 
-        public void withCampus(Campus campus) {
+        void withCampus(Campus campus) {
             this.campus = campus;
         }
 
-        public void withBuilding(Building building) {
+        void withBuilding(Building building) {
             this.building = building;
         }
 
-        public void withFloor(Floor floor) {
+        void withFloor(Floor floor) {
             this.floor = floor;
         }
 
-        public void withZone(Zone zone) {
+        void withZone(Zone zone) {
             this.zone = zone;
         }
 
-        public LocationData build() {
+        LocationData build() {
             return new LocationData(tGlobalLastSeen, campus, building, floor, zone);
         }
     }
