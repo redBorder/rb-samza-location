@@ -113,8 +113,80 @@ public class FirstEntranceConsolidatedDifferentZoneLessThanMinuteTest extends Te
         results = collector.getResult();
     }
 
+
     @Test
-    public void checkNoEvents() throws Exception {
-        log.info("{}", results);
+    public void checkCampus() throws Exception {
+        for (Map<String, Object> result : results) {
+            if (result.get(TYPE).equals(Location.LocationType.CAMPUS.type)) {
+                if (result.get(TIMESTAMP).equals(T1)) {
+                    assertEquals("outside", result.get(OLD_LOC));
+                    assertEquals("C1", result.get(NEW_LOC));
+                    assertEquals("-33.84882,151.06793", result.get(LATLONG));
+                } else {
+                    assertEquals("C1", result.get(OLD_LOC));
+                    assertEquals("C1", result.get(NEW_LOC));
+                    assertEquals("-20.84882,80.06793", result.get(LATLONG));
+                }
+            }
+        }
+    }
+
+    @Test
+    public void checkBuilding() throws Exception {
+        for (Map<String, Object> result : results) {
+            if (result.get(TYPE).equals(Location.LocationType.BUILDING.type)) {
+                if (result.get(TIMESTAMP).equals(T1)) {
+                    assertEquals("outside", result.get(OLD_LOC));
+                    assertEquals("B1", result.get(NEW_LOC));
+                    assertEquals("-33.84882,151.06793", result.get(LATLONG));
+                } else {
+                    assertEquals("B1", result.get(OLD_LOC));
+                    assertEquals("B1", result.get(NEW_LOC));
+                    assertEquals("-20.84882,80.06793", result.get(LATLONG));
+                }
+            }
+        }
+    }
+
+    @Test
+    public void checkFloor() throws Exception {
+        for (Map<String, Object> result : results) {
+            if (result.get(TYPE).equals(Location.LocationType.FLOOR.type)) {
+                if (result.get(TIMESTAMP).equals(T1)) {
+                    assertEquals("outside", result.get(OLD_LOC));
+                    assertEquals("F1", result.get(NEW_LOC));
+                    assertEquals("-33.84882,151.06793", result.get(LATLONG));
+                } else if (result.get(TIMESTAMP).equals(T2)) {
+                    assertEquals("F1", result.get(OLD_LOC));
+                    assertEquals("F3", result.get(NEW_LOC));
+                    assertEquals("-20.84882,80.06793", result.get(LATLONG));
+                } else {
+                    assertEquals("F3", result.get(OLD_LOC));
+                    assertEquals("F3", result.get(NEW_LOC));
+                    assertEquals("-20.84882,80.06793", result.get(LATLONG));
+                }
+            }
+        }
+    }
+
+    @Test
+    public void checkZone() throws Exception {
+        for (Map<String, Object> result : results) {
+            if (result.get(TYPE).equals(Location.LocationType.ZONE.type)) {
+                if (result.get(TIMESTAMP).equals(T1)) {
+                    assertEquals("outside", result.get(OLD_LOC));
+                    assertEquals("Z1", result.get(NEW_LOC));
+                    assertEquals("-33.84882,151.06793", result.get(LATLONG));
+                } else if (result.get(TIMESTAMP).equals(T2)) {
+                    assertEquals("Z1", result.get(OLD_LOC));
+                    assertEquals("Z5", result.get(NEW_LOC));
+                    assertEquals("-20.84882,80.06793", result.get(LATLONG));
+                } else {
+                    assertEquals("Z5", result.get(OLD_LOC));
+                    assertEquals("Z5", result.get(NEW_LOC));
+                    assertEquals("-20.84882,80.06793", result.get(LATLONG));
+                }
+            }
+        }
     }
 }
