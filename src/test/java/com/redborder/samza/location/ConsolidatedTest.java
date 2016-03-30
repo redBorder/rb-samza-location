@@ -96,7 +96,7 @@ public class ConsolidatedTest extends TestCase {
     @Test
     public void checkNumEvents() throws Exception {
         assertEquals(
-                4 * (Double.valueOf(Math.floor((T2 - T1 + MINUTE) / 60) + Math.floor((T3 - T2 + MINUTE) / 60)).intValue()),
+                4 * (Double.valueOf(Math.floor((T2 - T1) / 60) + Math.floor((T3 - T2) / 60)).intValue()),
                 results.size());
     }
 

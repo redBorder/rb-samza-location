@@ -114,6 +114,27 @@ public class ExpiredClientBackAgainTest extends TestCase {
         results = collector.getResult();
     }
 
+
+    @Test
+    public void checkTimes() throws Exception {
+        Map<Long, Integer> times = new HashMap<>();
+
+        for (Map<String, Object> result : results) {
+            Long tKey = (Long) result.get(TIMESTAMP);
+
+            if (!times.containsKey(tKey)) {
+                times.put(tKey, 1);
+            } else {
+                times.put(tKey, times.get(tKey) + 1);
+            }
+        }
+
+        for (Integer time : times.values()) {
+            assertEquals(Integer.valueOf(4), time);
+        }
+    }
+
+
     @Test
     public void checkSession() throws Exception {
         for (Map<String, Object> result : results.subList(0, 19)) {

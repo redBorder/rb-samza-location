@@ -31,8 +31,8 @@ public class ConsolidatedLessThanMinute2Test extends TestCase {
     static List<Map<String, Object>> results;
 
     static Long T1 = 1000000000L;
-    static Long T2 = T1 + CONSOLIDATED_TIME + 58;
-    static Long T3 = T1 + CONSOLIDATED_TIME + MINUTE;
+    static Long T2 = T1 + CONSOLIDATED_TIME;
+    static Long T3 = T2 + MINUTE;
 
     @BeforeClass
     public static void prepare() throws Exception {
@@ -78,14 +78,14 @@ public class ConsolidatedLessThanMinute2Test extends TestCase {
         samzaLocationTask.process(envelope1, collector, null);
 
         Map<String, Object> message2 = new HashMap<>();
-        message1.put(TIMESTAMP, T3);
-        message1.put(NAMESPACE, "N1");
-        message1.put(CLIENT, "X1");
-        message1.put(CAMPUS, "C1");
-        message1.put(BUILDING, "B1");
-        message1.put(FLOOR, "F1");
-        message1.put(ZONE, "Z1");
-        message1.put(LATLONG, "-33.84882,151.06793");
+        message2.put(TIMESTAMP, T3);
+        message2.put(NAMESPACE, "N1");
+        message2.put(CLIENT, "X1");
+        message2.put(CAMPUS, "C1");
+        message2.put(BUILDING, "B1");
+        message2.put(FLOOR, "F1");
+        message2.put(ZONE, "Z1");
+        message2.put(LATLONG, "-33.84882,151.06793");
 
         IncomingMessageEnvelope envelope2 = new IncomingMessageEnvelope(
                 new SystemStreamPartition("kafka", "rb_location", new Partition(0)), "OFFSET", "KEY", message2);
@@ -100,17 +100,19 @@ public class ConsolidatedLessThanMinute2Test extends TestCase {
         Map<Long, Integer> times = new HashMap<>();
 
         for (Map<String, Object> result : results) {
-            Long tKey = (Long) result.get(TIMESTAMP);
+            if (result.get(TYPE).equals("campus")) {
+                Long tKey = (Long) result.get(TIMESTAMP);
 
-            if (!times.containsKey(tKey)) {
-                times.put(tKey, 1);
-            } else {
-                times.put(tKey, times.get(tKey) + 1);
+                if (!times.containsKey(tKey)) {
+                    times.put(tKey, 1);
+                } else {
+                    times.put(tKey, times.get(tKey) + 1);
+                }
             }
         }
 
         for (Integer time : times.values()) {
-            assertEquals(Integer.valueOf(4), time);
+            assertEquals(Integer.valueOf(1), time);
         }
     }
 

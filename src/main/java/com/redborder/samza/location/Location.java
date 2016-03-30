@@ -75,7 +75,7 @@ public class Location {
         //Checking if the client is a new visit.
         if (location.tLastSeen - tLastSeen >= expiredTime) {
             Map<String, Object> event = new HashMap<>();
-            event.put(TIMESTAMP, tLastSeen);
+            event.put(TIMESTAMP, tLastSeen + MINUTE);
             event.put(OLD_LOC, newLoc);
             event.put(NEW_LOC, "outside");
             event.put(DWELL_TIME, dWellTime);
@@ -99,8 +99,7 @@ public class Location {
 
         if (newLoc.equals(location.newLoc)) {
             if (consolidated.equals(location.newLoc)) {
-                if (!isTheSameMinute(location.tLastSeen, tLastSeen)) {
-                    for (long t = tLastSeen; t <= location.tLastSeen; t += MINUTE) {
+                    for (long t = tLastSeen + MINUTE; t <= location.tLastSeen && !isTheSameMinute(t, location.tLastSeen); t += MINUTE) {
                         Map<String, Object> event = new HashMap<>();
                         event.put(TIMESTAMP, t);
                         event.put(OLD_LOC, location.newLoc);
@@ -111,17 +110,16 @@ public class Location {
                         event.put(locationWithUuid(locationType), location.newLoc);
                         event.put(TYPE, locationType.type);
 
-                        if (location.latLong != null) {
-                            event.put(LATLONG, location.latLong);
-                        }
-
-                        toSend.add(event);
-                        dWellTime++;
+                    if (location.latLong != null) {
+                        event.put(LATLONG, location.latLong);
                     }
 
-                    log.debug("Consolidated state, sending [{}] events", toSend.size());
-                    tLastSeen = location.tLastSeen;
+                    toSend.add(event);
+                    dWellTime++;
                 }
+
+                log.debug("Consolidated state, sending [{}] events", toSend.size());
+                tLastSeen = location.tLastSeen;
             } else {
                 if (location.tLastSeen - tLastSeen >= consolidatedTime) {
                     // Check if it's the first move!
@@ -145,9 +143,8 @@ public class Location {
                         consolidated = entrance;
                         tTransition += MINUTE;
                     } else {
-                        if (!isTheSameMinute(location.tLastSeen, tLastSeen)) {
                             // Last Consolidated location
-                            for (long t = tGlobal; t <= (tTransition - MINUTE); t += MINUTE) {
+                            for (long t = tGlobal + MINUTE; t <= (tTransition - MINUTE) && !isTheSameMinute(t, (tTransition - MINUTE)); t += MINUTE) {
                                 Map<String, Object> event = new HashMap<>();
                                 event.put(TIMESTAMP, t);
                                 event.put(OLD_LOC, consolidated);
@@ -158,15 +155,14 @@ public class Location {
                                 event.put(TRANSITION, 0);
                                 event.put(TYPE, locationType.type);
 
-                                if (location.latLong != null) {
-                                    event.put(LATLONG, latLong);
-                                }
-
-                                toSend.add(event);
-                                dWellTime++;
+                            if (location.latLong != null) {
+                                event.put(LATLONG, latLong);
                             }
 
+                            toSend.add(event);
+                            dWellTime++;
                         }
+
                         // Increasing the session uuid because this is new session
                         uuid += 1;
                     }
