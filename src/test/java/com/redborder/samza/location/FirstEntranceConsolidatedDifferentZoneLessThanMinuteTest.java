@@ -43,9 +43,9 @@ public class FirstEntranceConsolidatedDifferentZoneLessThanMinuteTest extends Te
         SamzaLocationTask samzaLocationTask = new SamzaLocationTask();
 
         Config config = mock(Config.class);
-        when(config.getLong("redborder.location.consolidatedTime.minute", CONSOLIDATED_TIME))
+        when(config.getLong("redborder.location.consolidatedTime.seconds", CONSOLIDATED_TIME))
                 .thenReturn(CONSOLIDATED_TIME);
-        when(config.getLong("redborder.location.expiredTime.minute", EXPIRED_TIME))
+        when(config.getLong("redborder.location.expiredTime.seconds", EXPIRED_TIME))
                 .thenReturn(EXPIRED_TIME);
         when(config.getLong("redborder.location.maxDwellTime.minute", 24 * 60L))
                 .thenReturn(24 * 60L);

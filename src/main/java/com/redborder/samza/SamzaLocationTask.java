@@ -40,8 +40,8 @@ public class SamzaLocationTask implements StreamTask, InitableTask, WindowableTa
     @Override
     public void init(Config config, TaskContext taskContext) throws Exception {
         this.store = (KeyValueStore<String, Map<String, Object>>) taskContext.getStore("location");
-        this.consolidatedTime = config.getLong("redborder.location.consolidatedTime.minute", 3 * MINUTE);
-        this.expiredTime = config.getLong("redborder.location.expiredTime.minute", 30 * MINUTE);
+        this.consolidatedTime = config.getLong("redborder.location.consolidatedTime.seconds", 3 * MINUTE);
+        this.expiredTime = config.getLong("redborder.location.expiredTime.seconds", 30 * MINUTE);
         this.maxDwellTime = config.getLong("redborder.location.maxDwellTime.minute", 24 * 60L); // 1D = 24h * 60min
     }
 
