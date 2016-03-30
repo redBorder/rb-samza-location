@@ -65,34 +65,34 @@ public class LocationData {
         return map;
     }
 
-    public static LocationData locationFromCache(Long consolidatedTime, Long expiredTime, Map<String, Object> rawData, String uuidPrefix) {
+    public static LocationData locationFromCache(Map<String, Object> rawData, String uuidPrefix) {
         LocationData.Builder builder = new LocationData.Builder();
         builder.timestamp(Utils.timestamp2Long(rawData.get(T_GLOBAL_LAST_SEEN)));
 
         Map<String, Object> campusData = (Map<String, Object>) rawData.get(CAMPUS);
         if (campusData != null) {
-            builder.withCampus(new Campus(consolidatedTime, expiredTime, campusData, uuidPrefix));
+            builder.withCampus(new Campus(campusData, uuidPrefix));
         }
 
         Map<String, Object> buildingData = (Map<String, Object>) rawData.get(BUILDING);
         if (buildingData != null) {
-            builder.withBuilding(new Building(consolidatedTime, expiredTime, buildingData, uuidPrefix));
+            builder.withBuilding(new Building(buildingData, uuidPrefix));
         }
 
         Map<String, Object> floorData = (Map<String, Object>) rawData.get(FLOOR);
         if (floorData != null) {
-            builder.withFloor(new Floor(consolidatedTime, expiredTime, floorData, uuidPrefix));
+            builder.withFloor(new Floor(floorData, uuidPrefix));
         }
 
         Map<String, Object> zoneData = (Map<String, Object>) rawData.get(ZONE);
         if (zoneData != null) {
-            builder.withZone(new Zone(consolidatedTime, expiredTime, zoneData, uuidPrefix));
+            builder.withZone(new Zone(zoneData, uuidPrefix));
         }
 
         return builder.build();
     }
 
-    public static LocationData locationFromMessage(Long consolidatedTime, Long expiredTime, Map<String, Object> rawData, String uuidPrefix) {
+    public static LocationData locationFromMessage(Map<String, Object> rawData, String uuidPrefix) {
         Long timestamp = Utils.timestamp2Long(rawData.get(TIMESTAMP));
         String latLong = (String) rawData.get(LATLONG);
 
@@ -101,22 +101,22 @@ public class LocationData {
 
         String campus = (String) rawData.get(CAMPUS);
         if (campus != null) {
-            builder.withCampus(new Campus(consolidatedTime, expiredTime, timestamp, timestamp, timestamp, "outside", campus, "outside", campus, latLong, uuidPrefix));
+            builder.withCampus(new Campus(timestamp, timestamp, timestamp, "outside", campus, "outside", campus, latLong, uuidPrefix));
         }
 
         String building = (String) rawData.get(BUILDING);
         if (building != null) {
-            builder.withBuilding(new Building(consolidatedTime, expiredTime, timestamp, timestamp, timestamp, "outside", building, "outside", building, latLong, uuidPrefix));
+            builder.withBuilding(new Building(timestamp, timestamp, timestamp, "outside", building, "outside", building, latLong, uuidPrefix));
         }
 
         String floor = (String) rawData.get(FLOOR);
         if (floor != null) {
-            builder.withFloor(new Floor(consolidatedTime, expiredTime, timestamp, timestamp, timestamp, "outside", floor, "outside", floor, latLong, uuidPrefix));
+            builder.withFloor(new Floor(timestamp, timestamp, timestamp, "outside", floor, "outside", floor, latLong, uuidPrefix));
         }
 
         String zone = (String) rawData.get(ZONE);
         if (zone != null) {
-            builder.withZone(new Zone(consolidatedTime, expiredTime, timestamp, timestamp, timestamp, "outside", zone, "outside", zone, latLong, uuidPrefix));
+            builder.withZone(new Zone(timestamp, timestamp, timestamp, "outside", zone, "outside", zone, latLong, uuidPrefix));
         }
 
         return builder.build();

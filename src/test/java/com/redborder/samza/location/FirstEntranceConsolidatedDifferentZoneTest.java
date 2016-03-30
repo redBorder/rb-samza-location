@@ -44,10 +44,12 @@ public class FirstEntranceConsolidatedDifferentZoneTest extends TestCase {
         SamzaLocationTask samzaLocationTask = new SamzaLocationTask();
 
         Config config = mock(Config.class);
-        when(config.getLong("redborder.location.consolidatedTime", CONSOLIDATED_TIME))
+        when(config.getLong("redborder.location.consolidatedTime.minute", CONSOLIDATED_TIME))
                 .thenReturn(CONSOLIDATED_TIME);
-        when(config.getLong("redborder.location.expiredTime", EXPIRED_TIME))
+        when(config.getLong("redborder.location.expiredTime.minute", EXPIRED_TIME))
                 .thenReturn(EXPIRED_TIME);
+        when(config.getLong("redborder.location.maxDwellTime.minute", 24 * 60L))
+                .thenReturn(24 * 60L);
 
         samzaLocationTask.init(config, new MockTaskContext());
 

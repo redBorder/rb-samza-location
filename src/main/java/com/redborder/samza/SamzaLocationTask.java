@@ -22,15 +22,17 @@ public class SamzaLocationTask implements StreamTask, InitableTask, WindowableTa
     private final Logger log = LoggerFactory.getLogger(getClass().getName());
     private final SystemStream systemStream = new SystemStream("kafka", "rb_loc_post");
     private KeyValueStore<String, Map<String, Object>> store;
-    private Long consolidatedTime;
-    private Long expiredTime;
+    static public Long consolidatedTime;
+    static public Long expiredTime;
+    static public Long maxDwellTime;
+
     private List<String> dimToEnrich = Lists.newArrayList(
             // Base dimensions
             MARKET_UUID, ORGANIZATION_UUID, ZONE_UUID, NAMESPACE_UUID,
             DEPLOYMENT_UUID, SENSOR_UUID, NAMESPACE, SERVICE_PROVIDER_UUID, BUILDING_UUID, CAMPUS_UUID, FLOOR_UUID,
 
             // Extra dimensions
-            STATUS
+            STATUS, CLIENT_PROFILE
     );
 
 
@@ -38,8 +40,9 @@ public class SamzaLocationTask implements StreamTask, InitableTask, WindowableTa
     @Override
     public void init(Config config, TaskContext taskContext) throws Exception {
         this.store = (KeyValueStore<String, Map<String, Object>>) taskContext.getStore("location");
-        this.consolidatedTime = config.getLong("redborder.location.consolidatedTime", 3 * MINUTE);
-        this.expiredTime = config.getLong("redborder.location.expiredTime", 30 * MINUTE);
+        this.consolidatedTime = config.getLong("redborder.location.consolidatedTime.minute", 3 * MINUTE);
+        this.expiredTime = config.getLong("redborder.location.expiredTime.minute", 30 * MINUTE);
+        this.maxDwellTime = config.getLong("redborder.location.maxDwellTime.minute", 24 * 60L); // 1D = 24h * 60min
     }
 
     @Override
@@ -52,13 +55,13 @@ public class SamzaLocationTask implements StreamTask, InitableTask, WindowableTa
 
         if (client != null) {
             List<Map<String, Object>> events = new LinkedList<>();
-            LocationData currentLocation = LocationData.locationFromMessage(consolidatedTime, expiredTime, message, id);
+            LocationData currentLocation = LocationData.locationFromMessage(message, id);
             Map<String, Object> cacheData = store.get(id);
 
             log.debug("Detected client with ID[{}] and with current data [{}] and cached data [" + cacheData + "]", id, currentLocation.toMap());
 
             if (cacheData != null) {
-                LocationData cacheLocation = LocationData.locationFromCache(consolidatedTime, expiredTime, cacheData, id);
+                LocationData cacheLocation = LocationData.locationFromCache(cacheData, id);
                 events.addAll(cacheLocation.updateWithNewLocationData(currentLocation));
                 Map<String, Object> locationMap = cacheLocation.toMap();
                 store.put(id, locationMap);
@@ -94,7 +97,7 @@ public class SamzaLocationTask implements StreamTask, InitableTask, WindowableTa
 
         while (iter.hasNext()) {
             Entry<String, Map<String, Object>> entry = iter.next();
-            LocationData locationData = LocationData.locationFromCache(consolidatedTime, expiredTime, entry.getValue(), entry.getKey());
+            LocationData locationData = LocationData.locationFromCache(entry.getValue(), entry.getKey());
 
             if (currentTime - locationData.tGlobalLastSeen >= expiredTime) {
                // TODO: Sending remove clients events.

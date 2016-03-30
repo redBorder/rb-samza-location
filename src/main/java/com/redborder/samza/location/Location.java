@@ -1,5 +1,6 @@
 package com.redborder.samza.location;
 
+import com.redborder.samza.SamzaLocationTask;
 import com.redborder.samza.util.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,20 +12,17 @@ import static com.redborder.samza.util.Dimensions.*;
 public class Location {
     private final Logger log = LoggerFactory.getLogger(getClass().getName());
 
-    public Long consolidatedTime;
-    public Long expiredTime;
-
-    public Long tGlobal;
-    public Long tLastSeen;
-    public Long tTransition;
-    public Integer dWellTime;
-    public String oldLoc;
-    public String newLoc;
-    public String consolidated;
-    public String entrance;
-    public String latLong;
-    public String uuidPrefix;
-    public Long uuid;
+    private Long tGlobal;
+    private Long tLastSeen;
+    private Long tTransition;
+    private Integer dWellTime;
+    private String oldLoc;
+    private String newLoc;
+    private String consolidated;
+    private String entrance;
+    private String latLong;
+    private String uuidPrefix;
+    private Long uuid;
 
     enum LocationType {
         CAMPUS("campus"), BUILDING("building"), FLOOR("floor"), ZONE("zone");
@@ -36,10 +34,8 @@ public class Location {
         }
     }
 
-    public Location(Long consolidatedTime, Long expiredTime, Long tGlobal, Long tLastSeen, Long tTransition, String oldLoc, String newLoc,
+    public Location(Long tGlobal, Long tLastSeen, Long tTransition, String oldLoc, String newLoc,
                     String consolidated, String entrance, String latLong, String uuidPrefix) {
-        this.consolidatedTime = consolidatedTime;
-        this.expiredTime = expiredTime;
         this.tGlobal = tGlobal;
         this.tLastSeen = tLastSeen;
         this.tTransition = tTransition;
@@ -53,9 +49,7 @@ public class Location {
         this.uuid = 0L;
     }
 
-    public Location(Long consolidatedTime, Long expiredTime, Map<String, Object> rawLocation, String uuidPrefix) {
-        this.consolidatedTime = consolidatedTime;
-        this.expiredTime = expiredTime;
+    public Location(Map<String, Object> rawLocation, String uuidPrefix) {
         this.tGlobal = Utils.timestamp2Long(rawLocation.get(T_GLOBAL));
         this.tLastSeen = Utils.timestamp2Long(rawLocation.get(T_LAST_SEEN));
         this.tTransition = Utils.timestamp2Long(rawLocation.get(T_TRANSITION));
@@ -73,7 +67,7 @@ public class Location {
         List<Map<String, Object>> toSend = new LinkedList<>();
 
         //Checking if the client is a new visit.
-        if (location.tLastSeen - tLastSeen >= expiredTime) {
+        if (location.tLastSeen - tLastSeen >= SamzaLocationTask.expiredTime) {
             Map<String, Object> event = new HashMap<>();
             event.put(TIMESTAMP, tLastSeen + MINUTE);
             event.put(OLD_LOC, newLoc);
@@ -99,29 +93,34 @@ public class Location {
 
         if (newLoc.equals(location.newLoc)) {
             if (consolidated.equals(location.newLoc)) {
-                    for (long t = tLastSeen + MINUTE; t <= location.tLastSeen && !isTheSameMinute(t, location.tLastSeen); t += MINUTE) {
-                        Map<String, Object> event = new HashMap<>();
-                        event.put(TIMESTAMP, t);
-                        event.put(OLD_LOC, location.newLoc);
-                        event.put(NEW_LOC, location.newLoc);
-                        event.put(TRANSITION, 0);
-                        event.put(DWELL_TIME, dWellTime);
-                        event.put(SESSION, String.format("%s-%s", uuidPrefix, uuid));
-                        event.put(locationWithUuid(locationType), location.newLoc);
-                        event.put(TYPE, locationType.type);
+                if (!isTheSameMinute(tLastSeen, location.tLastSeen)) {
+                    for (long t = tLastSeen + MINUTE; t <= location.tLastSeen; t += MINUTE) {
+                        if (dWellTime <= SamzaLocationTask.maxDwellTime) {
+                            Map<String, Object> event = new HashMap<>();
+                            event.put(TIMESTAMP, t);
+                            event.put(OLD_LOC, location.newLoc);
+                            event.put(NEW_LOC, location.newLoc);
+                            event.put(TRANSITION, 0);
+                            event.put(DWELL_TIME, dWellTime);
+                            event.put(SESSION, String.format("%s-%s", uuidPrefix, uuid));
+                            event.put(locationWithUuid(locationType), location.newLoc);
+                            event.put(TYPE, locationType.type);
 
-                    if (location.latLong != null) {
-                        event.put(LATLONG, location.latLong);
+                            if (location.latLong != null) {
+                                event.put(LATLONG, location.latLong);
+                            }
+
+                            toSend.add(event);
+                        }
+
+                        dWellTime++;
                     }
-
-                    toSend.add(event);
-                    dWellTime++;
                 }
 
                 log.debug("Consolidated state, sending [{}] events", toSend.size());
                 tLastSeen = location.tLastSeen;
             } else {
-                if (location.tLastSeen - tLastSeen >= consolidatedTime) {
+                if (location.tLastSeen - tLastSeen >= SamzaLocationTask.consolidatedTime) {
                     // Check if it's the first move!
                     if (consolidated.equals("outside")) {
                         Map<String, Object> event = new HashMap<>();
@@ -143,17 +142,17 @@ public class Location {
                         consolidated = entrance;
                         tTransition += MINUTE;
                     } else {
-                            // Last Consolidated location
-                            for (long t = tGlobal + MINUTE; t <= (tTransition - MINUTE) && !isTheSameMinute(t, (tTransition - MINUTE)); t += MINUTE) {
-                                Map<String, Object> event = new HashMap<>();
-                                event.put(TIMESTAMP, t);
-                                event.put(OLD_LOC, consolidated);
-                                event.put(NEW_LOC, consolidated);
-                                event.put(SESSION, String.format("%s-%s", uuidPrefix, uuid));
-                                event.put(DWELL_TIME, dWellTime);
-                                event.put(locationWithUuid(locationType), consolidated);
-                                event.put(TRANSITION, 0);
-                                event.put(TYPE, locationType.type);
+                        // Last Consolidated location
+                        for (long t = tGlobal + MINUTE; t <= (tTransition - MINUTE) && !isTheSameMinute(t, (tTransition - MINUTE)); t += MINUTE) {
+                            Map<String, Object> event = new HashMap<>();
+                            event.put(TIMESTAMP, t);
+                            event.put(OLD_LOC, consolidated);
+                            event.put(NEW_LOC, consolidated);
+                            event.put(SESSION, String.format("%s-%s", uuidPrefix, uuid));
+                            event.put(DWELL_TIME, dWellTime);
+                            event.put(locationWithUuid(locationType), consolidated);
+                            event.put(TRANSITION, 0);
+                            event.put(TYPE, locationType.type);
 
                             if (location.latLong != null) {
                                 event.put(LATLONG, latLong);
@@ -221,7 +220,7 @@ public class Location {
                 } else {
                     log.debug("Trying to consolidate state, but {}",
                             String.format("location.tLastSeen[%s] - tLastSeen[%s] < consolidatedTime[%s]",
-                                    location.tLastSeen, tLastSeen, consolidatedTime));
+                                    location.tLastSeen, tLastSeen, SamzaLocationTask.consolidatedTime));
                 }
             }
         } else {

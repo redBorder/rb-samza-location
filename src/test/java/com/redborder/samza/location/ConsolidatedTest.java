@@ -38,10 +38,12 @@ public class ConsolidatedTest extends TestCase {
         SamzaLocationTask samzaLocationTask = new SamzaLocationTask();
 
         Config config = mock(Config.class);
-        when(config.getLong("redborder.location.consolidatedTime", CONSOLIDATED_TIME))
+        when(config.getLong("redborder.location.consolidatedTime.minute", CONSOLIDATED_TIME))
                 .thenReturn(CONSOLIDATED_TIME);
-        when(config.getLong("redborder.location.expiredTime", EXPIRED_TIME))
+        when(config.getLong("redborder.location.expiredTime.minute", EXPIRED_TIME))
                 .thenReturn(EXPIRED_TIME);
+        when(config.getLong("redborder.location.maxDwellTime.minute", 24 * 60L))
+                .thenReturn(24 * 60L);
 
         samzaLocationTask.init(config, new MockTaskContext());
 
@@ -96,7 +98,7 @@ public class ConsolidatedTest extends TestCase {
     @Test
     public void checkNumEvents() throws Exception {
         assertEquals(
-                4 * (Double.valueOf(Math.floor((T2 - T1) / 60) + Math.floor((T3 - T2) / 60)).intValue()),
+                4 * (Double.valueOf(Math.ceil((T2 - T1) / 60.00) + Math.ceil((T3 - T2) / 60.00)).intValue()),
                 results.size());
     }
 

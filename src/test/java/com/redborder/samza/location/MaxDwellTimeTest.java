@@ -24,15 +24,15 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ConsolidatedLessThanMinute2Test extends TestCase {
+public class MaxDwellTimeTest extends TestCase {
     private final Logger log = LoggerFactory.getLogger(getClass().getName());
     private static Long CONSOLIDATED_TIME = 3 * MINUTE;
     private static Long EXPIRED_TIME = 30 * MINUTE;
+    private static Long MAX_DWELL_TIME = 24 * 60L;
     static List<Map<String, Object>> results;
 
     static Long T1 = 1000000000L;
     static Long T2 = T1 + CONSOLIDATED_TIME;
-    static Long T3 = T2 + MINUTE;
 
     @BeforeClass
     public static void prepare() throws Exception {
@@ -44,7 +44,7 @@ public class ConsolidatedLessThanMinute2Test extends TestCase {
         when(config.getLong("redborder.location.expiredTime.minute", EXPIRED_TIME))
                 .thenReturn(EXPIRED_TIME);
         when(config.getLong("redborder.location.maxDwellTime.minute", 24 * 60L))
-                .thenReturn(24 * 60L);
+                .thenReturn(MAX_DWELL_TIME);
 
         samzaLocationTask.init(config, new MockTaskContext());
 
@@ -79,20 +79,21 @@ public class ConsolidatedLessThanMinute2Test extends TestCase {
 
         samzaLocationTask.process(envelope1, collector, null);
 
-        Map<String, Object> message2 = new HashMap<>();
-        message2.put(TIMESTAMP, T3);
-        message2.put(NAMESPACE, "N1");
-        message2.put(CLIENT, "X1");
-        message2.put(CAMPUS, "C1");
-        message2.put(BUILDING, "B1");
-        message2.put(FLOOR, "F1");
-        message2.put(ZONE, "Z1");
-        message2.put(LATLONG, "-33.84882,151.06793");
+        // 48h * 60 min * 60 sec
+        for (long t = MINUTE; t <= 48 * 60 * 60; t += MINUTE) {
+            Map<String, Object> messageAux = new HashMap<>();
+            messageAux.put(TIMESTAMP, T2 + t);
+            messageAux.put(NAMESPACE, "N1");
+            messageAux.put(CLIENT, "X1");
+            messageAux.put(CAMPUS, "C1");
+            messageAux.put(BUILDING, "B1");
+            messageAux.put(FLOOR, "F1");
+            messageAux.put(ZONE, "Z1");
+            messageAux.put(LATLONG, "-33.84882,151.06793");
 
-        IncomingMessageEnvelope envelope2 = new IncomingMessageEnvelope(
-                new SystemStreamPartition("kafka", "rb_location", new Partition(0)), "OFFSET", "KEY", message2);
-
-        samzaLocationTask.process(envelope2, collector, null);
+            samzaLocationTask.process(new IncomingMessageEnvelope(
+                    new SystemStreamPartition("kafka", "rb_location", new Partition(0)), "OFFSET", "KEY", messageAux), collector, null);
+        }
 
         results = collector.getResult();
     }
@@ -102,20 +103,25 @@ public class ConsolidatedLessThanMinute2Test extends TestCase {
         Map<Long, Integer> times = new HashMap<>();
 
         for (Map<String, Object> result : results) {
-            if (result.get(TYPE).equals("campus")) {
-                Long tKey = (Long) result.get(TIMESTAMP);
+            Long tKey = (Long) result.get(TIMESTAMP);
 
-                if (!times.containsKey(tKey)) {
-                    times.put(tKey, 1);
-                } else {
-                    times.put(tKey, times.get(tKey) + 1);
-                }
+            if (!times.containsKey(tKey)) {
+                times.put(tKey, 1);
+            } else {
+                times.put(tKey, times.get(tKey) + 1);
             }
         }
 
         for (Integer time : times.values()) {
-            assertEquals(Integer.valueOf(1), time);
+            assertEquals(Integer.valueOf(4), time);
         }
     }
 
+    @Test
+    public void maxDwell() throws Exception {
+        for (Map<String, Object> result : results) {
+            assertTrue(MAX_DWELL_TIME >= (Integer) result.get(DWELL_TIME));
+        }
+
+    }
 }
