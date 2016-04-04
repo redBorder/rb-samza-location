@@ -3,6 +3,7 @@ package com.redborder.samza.location;
 import com.redborder.samza.SamzaLocationTask;
 import com.redborder.samza.util.MockMessageCollector;
 import com.redborder.samza.util.MockTaskContext;
+import com.redborder.samza.util.Utils;
 import junit.framework.TestCase;
 import org.apache.samza.Partition;
 import org.apache.samza.config.Config;
@@ -31,8 +32,8 @@ public class MaxDwellTimeTest extends TestCase {
     private static Long MAX_DWELL_TIME = 24 * 60L;
     static List<Map<String, Object>> results;
 
-    static Long T1 = 1000000000L;
-    static Long T2 = T1 + CONSOLIDATED_TIME;
+    static Long T1 = Utils.timestamp2Long(1000000000L);
+    static Long T2 = Utils.timestamp2Long(T1 + CONSOLIDATED_TIME);
 
     @BeforeClass
     public static void prepare() throws Exception {

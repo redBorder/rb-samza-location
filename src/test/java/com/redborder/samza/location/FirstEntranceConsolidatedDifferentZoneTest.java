@@ -3,6 +3,7 @@ package com.redborder.samza.location;
 import com.redborder.samza.SamzaLocationTask;
 import com.redborder.samza.util.MockMessageCollector;
 import com.redborder.samza.util.MockTaskContext;
+import com.redborder.samza.util.Utils;
 import junit.framework.TestCase;
 import org.apache.samza.Partition;
 import org.apache.samza.config.Config;
@@ -33,10 +34,10 @@ public class FirstEntranceConsolidatedDifferentZoneTest extends TestCase {
 
     static List<Map<String, Object>> results;
 
-    static Long T1 = 1000000000L;
-    static Long T2 = T1 + MINUTE;
-    static Long T3 = T1 + 2 * MINUTE;
-    static Long T4 = T3 + 4 * MINUTE;
+    static Long T1 = Utils.timestamp2Long(1000000000L);
+    static Long T2 = Utils.timestamp2Long(T1 + MINUTE);
+    static Long T3 = Utils.timestamp2Long(T1 + 2 * MINUTE);
+    static Long T4 = Utils.timestamp2Long(T3 + 4 * MINUTE);
 
 
     @BeforeClass

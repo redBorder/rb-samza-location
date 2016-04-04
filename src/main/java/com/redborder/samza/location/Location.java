@@ -36,9 +36,9 @@ public class Location {
 
     public Location(Long tGlobal, Long tLastSeen, Long tTransition, String oldLoc, String newLoc,
                     String consolidated, String entrance, String latLong, String uuidPrefix) {
-        this.tGlobal = tGlobal;
-        this.tLastSeen = tLastSeen;
-        this.tTransition = tTransition;
+        this.tGlobal = tGlobal - tGlobal % 60;
+        this.tLastSeen = tLastSeen - tLastSeen % 60;
+        this.tTransition = tTransition - tTransition % 60;
         this.oldLoc = oldLoc;
         this.newLoc = newLoc;
         this.consolidated = consolidated;
@@ -50,7 +50,7 @@ public class Location {
     }
 
     public Location(Map<String, Object> rawLocation, String uuidPrefix) {
-        this.tGlobal = Utils.timestamp2Long(rawLocation.get(T_GLOBAL));
+        this.tGlobal = Utils.timestamp2Long(rawLocation.get(T_GLOBAL)) ;
         this.tLastSeen = Utils.timestamp2Long(rawLocation.get(T_LAST_SEEN));
         this.tTransition = Utils.timestamp2Long(rawLocation.get(T_TRANSITION));
         this.dWellTime = (Integer) rawLocation.get(DWELL_TIME);

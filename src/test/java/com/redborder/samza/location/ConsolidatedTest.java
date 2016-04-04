@@ -3,6 +3,7 @@ package com.redborder.samza.location;
 import com.redborder.samza.SamzaLocationTask;
 import com.redborder.samza.util.MockMessageCollector;
 import com.redborder.samza.util.MockTaskContext;
+import com.redborder.samza.util.Utils;
 import org.apache.samza.Partition;
 import org.apache.samza.config.Config;
 import org.apache.samza.system.IncomingMessageEnvelope;
@@ -29,9 +30,9 @@ public class ConsolidatedTest extends TestCase {
     private static Long EXPIRED_TIME = 30 * MINUTE;
     static List<Map<String, Object>> results;
 
-    static Long T1 = 1000000000L;
-    static Long T2 = 1000000200L;
-    static Long T3 = T2 + 10 * MINUTE;
+    static Long T1 = Utils.timestamp2Long(1459758060L);
+    static Long T2 = Utils.timestamp2Long(T1 + 200L);
+    static Long T3 = Utils.timestamp2Long(T2 + 10 * MINUTE);
 
     @BeforeClass
     public static void prepare() throws Exception {
@@ -98,7 +99,7 @@ public class ConsolidatedTest extends TestCase {
     @Test
     public void checkNumEvents() throws Exception {
         assertEquals(
-                4 * (Double.valueOf(Math.ceil((T2 - T1) / 60.00) + Math.ceil((T3 - T2) / 60.00)).intValue()),
+                4 * (Double.valueOf((T3 - T1) / 60).intValue() + 1 ),
                 results.size());
     }
 
@@ -125,7 +126,7 @@ public class ConsolidatedTest extends TestCase {
     public void checkLocations() throws Exception {
         for (Map<String, Object> result : results) {
 
-            if (result.get(TIMESTAMP).equals(T1)) {
+            if (result.get(TIMESTAMP).equals(Utils.timestamp2Long(T1))) {
                 if (result.get(TYPE).equals(Location.LocationType.CAMPUS.type)) {
                     assertEquals("outside", result.get(OLD_LOC));
                     assertEquals("C1", result.get(NEW_LOC));

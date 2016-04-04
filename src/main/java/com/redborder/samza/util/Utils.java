@@ -18,7 +18,7 @@ public class Utils {
             result = System.currentTimeMillis() / 1000L;
         }
 
-        return result;
+        return result - result % 60;
     }
 
     public static Long toLong(Object l) {

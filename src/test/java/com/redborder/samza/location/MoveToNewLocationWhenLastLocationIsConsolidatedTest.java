@@ -33,11 +33,11 @@ public class MoveToNewLocationWhenLastLocationIsConsolidatedTest extends TestCas
 
     static List<Map<String, Object>> results;
 
-    static Long T1 = 1000000000L;
-    static Long T2 = T1 + MINUTE;
-    static Long T3 = T1 + 5 * MINUTE;
-    static Long T4 = T3 + 10 * MINUTE;
-    static Long T5 = T4 + 5 * MINUTE;
+    static Long T1 = Utils.timestamp2Long(1000000000L);
+    static Long T2 = Utils.timestamp2Long(T1 + MINUTE);
+    static Long T3 = Utils.timestamp2Long(T1 + 5 * MINUTE);
+    static Long T4 = Utils.timestamp2Long(T3 + 10 * MINUTE);
+    static Long T5 = Utils.timestamp2Long(T4 + 5 * MINUTE);
 
 
     @BeforeClass
