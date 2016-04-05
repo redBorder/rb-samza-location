@@ -65,6 +65,17 @@ public class LocationData {
         return map;
     }
 
+    public List<Location> locations(){
+        List<Location> locations = new LinkedList<>();
+
+        if (campus != null) locations.add(campus);
+        if (building != null) locations.add(building);
+        if (floor != null)locations.add(floor);
+        if (zone != null) locations.add(zone);
+
+        return locations;
+    }
+
     public static LocationData locationFromCache(Map<String, Object> rawData, String uuidPrefix) {
         LocationData.Builder builder = new LocationData.Builder();
         builder.timestamp(Utils.timestamp2Long(rawData.get(T_GLOBAL_LAST_SEEN)));

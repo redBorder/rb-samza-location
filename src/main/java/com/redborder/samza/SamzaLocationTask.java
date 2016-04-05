@@ -3,6 +3,7 @@ package com.redborder.samza;
 import com.google.common.collect.Lists;
 import com.redborder.samza.location.Location;
 import com.redborder.samza.location.LocationData;
+import com.redborder.samza.util.Utils;
 import org.apache.samza.config.Config;
 import org.apache.samza.storage.kv.Entry;
 import org.apache.samza.storage.kv.KeyValueIterator;
@@ -40,9 +41,9 @@ public class SamzaLocationTask implements StreamTask, InitableTask, WindowableTa
     @Override
     public void init(Config config, TaskContext taskContext) throws Exception {
         this.store = (KeyValueStore<String, Map<String, Object>>) taskContext.getStore("location");
-        this.consolidatedTime = config.getLong("redborder.location.consolidatedTime.seconds", 3 * MINUTE);
-        this.expiredTime = config.getLong("redborder.location.expiredTime.seconds", 30 * MINUTE);
-        this.maxDwellTime = config.getLong("redborder.location.maxDwellTime.minute", 24 * 60L); // 1D = 24h * 60min
+        consolidatedTime = config.getLong("redborder.location.consolidatedTime.seconds", 3 * MINUTE);
+        expiredTime = config.getLong("redborder.location.expiredTime.seconds", 30 * MINUTE);
+        maxDwellTime = config.getLong("redborder.location.maxDwellTime.minute", 24 * 60L); // 1D = 24h * 60min
     }
 
     @Override
@@ -92,16 +93,23 @@ public class SamzaLocationTask implements StreamTask, InitableTask, WindowableTa
     @Override
     public void window(MessageCollector messageCollector, TaskCoordinator taskCoordinator) throws Exception {
         KeyValueIterator<String, Map<String, Object>> iter = store.all();
-        Long currentTime = System.currentTimeMillis() / 1000L;
+        Long currentTime = Utils.currentTimestamp();
 
+        List<String> toDelete = new ArrayList<>();
 
         while (iter.hasNext()) {
             Entry<String, Map<String, Object>> entry = iter.next();
             LocationData locationData = LocationData.locationFromCache(entry.getValue(), entry.getKey());
 
             if (currentTime - locationData.tGlobalLastSeen >= expiredTime) {
-               // TODO: Sending remove clients events.
+                toDelete.add(entry.getKey());
+
+                for(Location location : locationData.locations()){
+                    // TODO: Send events by location.
+                }
             }
         }
+
+        store.deleteAll(toDelete);
     }
 }

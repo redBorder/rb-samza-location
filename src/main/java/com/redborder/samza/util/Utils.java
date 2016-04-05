@@ -21,6 +21,10 @@ public class Utils {
         return result - result % 60;
     }
 
+    public static Long currentTimestamp(){
+        return timestamp2Long(null);
+    }
+
     public static Long toLong(Object l) {
         Long result;
 

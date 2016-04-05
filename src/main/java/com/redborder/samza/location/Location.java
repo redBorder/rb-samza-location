@@ -12,19 +12,19 @@ import static com.redborder.samza.util.Dimensions.*;
 public class Location {
     private final Logger log = LoggerFactory.getLogger(getClass().getName());
 
-    private Long tGlobal;
-    private Long tLastSeen;
-    private Long tTransition;
-    private Integer dWellTime;
-    private String oldLoc;
-    private String newLoc;
-    private String consolidated;
-    private String entrance;
-    private String latLong;
-    private String uuidPrefix;
-    private Long uuid;
+    public Long tGlobal;
+    public Long tLastSeen;
+    public Long tTransition;
+    public Integer dWellTime;
+    public String oldLoc;
+    public String newLoc;
+    public String consolidated;
+    public String entrance;
+    public String latLong;
+    public String uuidPrefix;
+    public Long uuid;
 
-    enum LocationType {
+    public enum LocationType {
         CAMPUS("campus"), BUILDING("building"), FLOOR("floor"), ZONE("zone");
 
         public String type;
