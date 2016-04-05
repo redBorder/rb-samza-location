@@ -36,8 +36,6 @@ public class SamzaLocationTask implements StreamTask, InitableTask, WindowableTa
             STATUS, CLIENT_PROFILE
     );
 
-
-
     @Override
     public void init(Config config, TaskContext taskContext) throws Exception {
         this.store = (KeyValueStore<String, Map<String, Object>>) taskContext.getStore("location");

@@ -122,6 +122,28 @@ public class MovingToNewLocationAfterConsolidated extends TestCase {
     }
 
     @Test
+    public void checkFirstConsolidated() throws Exception {
+        for (Map<String, Object> r : results)
+            if ((Long) r.get(TIMESTAMP) < (T3 + MINUTE)) {
+                assertEquals("C1", r.get(CAMPUS));
+                assertEquals("B1", r.get(BUILDING));
+                assertEquals("F1", r.get(FLOOR));
+                assertEquals("Z1", r.get(ZONE));
+            }
+    }
+
+    @Test
+    public void checkLastConsolidated() throws Exception {
+        for (Map<String, Object> r : results)
+            if ((Long) r.get(TIMESTAMP) > (T3 + MINUTE)) {
+                assertEquals("C2", r.get(CAMPUS));
+                assertEquals("B2", r.get(BUILDING));
+                assertEquals("F2", r.get(FLOOR));
+                assertEquals("Z2", r.get(ZONE));
+            }
+    }
+
+    @Test
     public void checkTimes() throws Exception {
         Map<Long, Integer> times = new HashMap<>();
 
