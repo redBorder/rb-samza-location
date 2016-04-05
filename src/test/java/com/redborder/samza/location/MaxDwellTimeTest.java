@@ -32,7 +32,7 @@ public class MaxDwellTimeTest extends TestCase {
     private static Long MAX_DWELL_TIME = 24 * 60L;
     static List<Map<String, Object>> results;
 
-    static Long T1 = Utils.timestamp2Long(1000000000L);
+    static Long T1 = Utils.timestamp2Long(1459758060L);
     static Long T2 = Utils.timestamp2Long(T1 + CONSOLIDATED_TIME);
 
     @BeforeClass

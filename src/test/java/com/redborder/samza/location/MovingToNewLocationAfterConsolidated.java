@@ -25,7 +25,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ConsolidatedLessThanMinuteTest extends TestCase {
+public class MovingToNewLocationAfterConsolidated extends TestCase {
+
     private final Logger log = LoggerFactory.getLogger(getClass().getName());
     private static Long CONSOLIDATED_TIME = 3 * MINUTE;
     private static Long EXPIRED_TIME = 30 * MINUTE;
@@ -33,6 +34,8 @@ public class ConsolidatedLessThanMinuteTest extends TestCase {
 
     static Long T1 = Utils.timestamp2Long(1459758060L);
     static Long T2 = Utils.timestamp2Long(T1 + CONSOLIDATED_TIME);
+    static Long T3 = Utils.timestamp2Long(T1 + CONSOLIDATED_TIME);
+    static Long T4 = Utils.timestamp2Long(T3 + CONSOLIDATED_TIME);
 
     @BeforeClass
     public static void prepare() throws Exception {
@@ -78,9 +81,44 @@ public class ConsolidatedLessThanMinuteTest extends TestCase {
                 new SystemStreamPartition("kafka", "rb_location", new Partition(0)), "OFFSET", "KEY", message1);
 
         samzaLocationTask.process(envelope1, collector, null);
-        samzaLocationTask.process(envelope1, collector, null);
 
+        Map<String, Object> message2 = new HashMap<>();
+        message2.put(TIMESTAMP, T3);
+        message2.put(NAMESPACE, "N1");
+        message2.put(CLIENT, "X1");
+        message2.put(CAMPUS, "C2");
+        message2.put(BUILDING, "B2");
+        message2.put(FLOOR, "F2");
+        message2.put(ZONE, "Z2");
+        message2.put(LATLONG, "-33.84882,151.06793");
+
+        IncomingMessageEnvelope envelope2 = new IncomingMessageEnvelope(
+                new SystemStreamPartition("kafka", "rb_location", new Partition(0)), "OFFSET", "KEY", message2);
+
+        samzaLocationTask.process(envelope2, collector, null);
+
+        Map<String, Object> message3 = new HashMap<>();
+        message3.put(TIMESTAMP, T4);
+        message3.put(NAMESPACE, "N1");
+        message3.put(CLIENT, "X1");
+        message3.put(CAMPUS, "C2");
+        message3.put(BUILDING, "B2");
+        message3.put(FLOOR, "F2");
+        message3.put(ZONE, "Z2");
+        message3.put(LATLONG, "-33.84882,151.06793");
+
+        IncomingMessageEnvelope envelope3 = new IncomingMessageEnvelope(
+                new SystemStreamPartition("kafka", "rb_location", new Partition(0)), "OFFSET", "KEY", message3);
+
+        samzaLocationTask.process(envelope3, collector, null);
         results = collector.getResult();
+    }
+
+    @Test
+    public void checkTransition() throws Exception {
+        for (Map<String, Object> r : results)
+            if (r.get(TIMESTAMP).equals(T3 + MINUTE))
+                assertEquals(1, r.get(TRANSITION));
     }
 
     @Test
@@ -101,5 +139,4 @@ public class ConsolidatedLessThanMinuteTest extends TestCase {
             assertEquals(Integer.valueOf(4), time);
         }
     }
-
 }

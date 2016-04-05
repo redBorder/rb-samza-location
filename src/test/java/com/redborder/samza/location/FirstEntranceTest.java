@@ -35,7 +35,7 @@ public class FirstEntranceTest extends TestCase{
 
     static List<Map<String, Object>> results;
 
-    static Long T1 = Utils.timestamp2Long(1457500000L);
+    static Long T1 = Utils.timestamp2Long(1459758060L);
 
     @BeforeClass
     public static void prepare() throws Exception {

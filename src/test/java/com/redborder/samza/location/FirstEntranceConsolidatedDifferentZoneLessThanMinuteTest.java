@@ -33,7 +33,7 @@ public class FirstEntranceConsolidatedDifferentZoneLessThanMinuteTest extends Te
 
     static List<Map<String, Object>> results;
 
-    static Long T1 = Utils.timestamp2Long(1000000000L);
+    static Long T1 = Utils.timestamp2Long(1459758060L);
     static Long T2 = Utils.timestamp2Long(T1 + MINUTE);
     static Long T3 = Utils.timestamp2Long(T2 + 20);
     static Long T4 = Utils.timestamp2Long(T3 + 4 * MINUTE);

@@ -33,7 +33,7 @@ public class ExpiredClientBackAgainTest extends TestCase {
 
     static List<Map<String, Object>> results;
 
-    private static Long T1 = Utils.timestamp2Long(1000000000L);
+    private static Long T1 = Utils.timestamp2Long(1459758060L);
     private static Long T2 = Utils.timestamp2Long(T1 + CONSOLIDATED_TIME);
     private static Long T3 = Utils.timestamp2Long(T2 + EXPIRED_TIME);
     private static Long T4 = Utils.timestamp2Long(T3 + CONSOLIDATED_TIME);

@@ -166,6 +166,11 @@ public class Location {
                         uuid += 1;
                     }
 
+                    if(isTheSameMinute(tTransition, tGlobal)){
+                        tTransition += MINUTE;
+                        tLastSeen += MINUTE;
+                    }
+
                     dWellTime = 1;
                     // Transition
                     for (long t = tTransition; t <= tLastSeen; t += MINUTE) {
