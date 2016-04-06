@@ -33,7 +33,7 @@ public class SamzaLocationTask implements StreamTask, InitableTask, WindowableTa
             DEPLOYMENT_UUID, SENSOR_UUID, NAMESPACE, SERVICE_PROVIDER_UUID, BUILDING_UUID, CAMPUS_UUID, FLOOR_UUID,
 
             // Extra dimensions
-            STATUS, CLIENT_PROFILE
+            STATUS, CLIENT_PROFILE, CLIENT_RSSI_NUM
     );
 
     @Override

@@ -41,4 +41,5 @@ public class Dimensions {
     // Extra
     public final static String STATUS = "dot11_status";
     public final static String CLIENT_PROFILE = "client_profile";
+    public final static String CLIENT_RSSI_NUM = "client_rssi_num";
 }
