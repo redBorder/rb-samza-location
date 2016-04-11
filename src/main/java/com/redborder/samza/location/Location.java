@@ -23,6 +23,7 @@ public class Location {
     public String latLong;
     public String uuidPrefix;
     public Long uuid;
+    private Map<String, Integer> repeatLocations;
 
     public enum LocationType {
         CAMPUS("campus"), BUILDING("building"), FLOOR("floor"), ZONE("zone");
@@ -47,10 +48,11 @@ public class Location {
         this.latLong = latLong;
         this.uuidPrefix = uuidPrefix;
         this.uuid = 0L;
+        this.repeatLocations = new HashMap<>();
     }
 
     public Location(Map<String, Object> rawLocation, String uuidPrefix) {
-        this.tGlobal = Utils.timestamp2Long(rawLocation.get(T_GLOBAL)) ;
+        this.tGlobal = Utils.timestamp2Long(rawLocation.get(T_GLOBAL));
         this.tLastSeen = Utils.timestamp2Long(rawLocation.get(T_LAST_SEEN));
         this.tTransition = Utils.timestamp2Long(rawLocation.get(T_TRANSITION));
         this.dWellTime = (Integer) rawLocation.get(DWELL_TIME);
@@ -61,10 +63,27 @@ public class Location {
         this.latLong = (String) rawLocation.get(LATLONG);
         this.uuid = Utils.toLong(rawLocation.get(UUID));
         this.uuidPrefix = uuidPrefix;
+        this.repeatLocations = (Map<String, Integer>) rawLocation.get(REPEAT_LOCATION);
+
+        if (repeatLocations == null) {
+            repeatLocations = new HashMap<>();
+        }
     }
 
     public List<Map<String, Object>> updateWithNewLocation(Location location, LocationType locationType) {
         List<Map<String, Object>> toSend = new LinkedList<>();
+        Integer newRepetitions = repeatLocations.get(location.newLoc);
+        Integer oldRepetitions = repeatLocations.get(newLoc);
+
+        if (newRepetitions == null) newRepetitions = 0;
+        if (oldRepetitions == null) oldRepetitions = 0;
+
+
+        if (location.tLastSeen - tLastSeen >= SamzaLocationTask.expiredRepetitionsTime) {
+            newRepetitions = 0;
+            oldRepetitions = 0;
+        }
+        Double popularity = (double)((int)((newRepetitions + 1) / (uuid.doubleValue() + 1)*100.0)/100.0);
 
         //Checking if the client is a new visit.
         if (location.tLastSeen - tLastSeen >= SamzaLocationTask.expiredTime) {
@@ -74,6 +93,8 @@ public class Location {
             event.put(NEW_LOC, "outside");
             event.put(DWELL_TIME, dWellTime);
             event.put(TRANSITION, 1);
+            event.put(REPETITIONS, oldRepetitions);
+            event.put(POPULARITY, popularity);
             event.put(SESSION, String.format("%s-%s", uuidPrefix, uuid));
             event.put(locationWithUuid(locationType), newLoc);
             event.put(TYPE, locationType.type);
@@ -101,6 +122,8 @@ public class Location {
                             event.put(OLD_LOC, location.newLoc);
                             event.put(NEW_LOC, location.newLoc);
                             event.put(TRANSITION, 0);
+                            event.put(REPETITIONS, newRepetitions);
+                            event.put(POPULARITY, popularity);
                             event.put(DWELL_TIME, dWellTime);
                             event.put(SESSION, String.format("%s-%s", uuidPrefix, uuid));
                             event.put(locationWithUuid(locationType), location.newLoc);
@@ -121,6 +144,7 @@ public class Location {
                 tLastSeen = location.tLastSeen;
             } else {
                 if (location.tLastSeen - tLastSeen >= SamzaLocationTask.consolidatedTime) {
+                    repeatLocations.get(location.newLoc);
                     // Check if it's the first move!
                     if (consolidated.equals("outside")) {
                         Map<String, Object> event = new HashMap<>();
@@ -130,6 +154,8 @@ public class Location {
                         event.put(SESSION, String.format("%s-%s", uuidPrefix, uuid));
                         event.put(locationWithUuid(locationType), entrance);
                         event.put(TRANSITION, 1);
+                        event.put(REPETITIONS, 0);
+                        event.put(POPULARITY, popularity);
                         event.put(DWELL_TIME, 1);
                         event.put(TYPE, locationType.type);
 
@@ -152,6 +178,8 @@ public class Location {
                             event.put(DWELL_TIME, dWellTime);
                             event.put(locationWithUuid(locationType), consolidated);
                             event.put(TRANSITION, 0);
+                            event.put(REPETITIONS, oldRepetitions);
+                            event.put(POPULARITY, popularity);
                             event.put(TYPE, locationType.type);
 
                             if (location.latLong != null) {
@@ -164,9 +192,10 @@ public class Location {
 
                         // Increasing the session uuid because this is new session
                         uuid += 1;
+                        popularity = ((int)((newRepetitions + 1) / (uuid.doubleValue() + 1)*100.0)/100.0);
                     }
 
-                    if(isTheSameMinute(tTransition, tGlobal)){
+                    if (isTheSameMinute(tTransition, tGlobal)) {
                         tTransition += MINUTE;
                         tLastSeen += MINUTE;
                     }
@@ -182,6 +211,8 @@ public class Location {
                         event.put(locationWithUuid(locationType), location.newLoc);
                         event.put(DWELL_TIME, dWellTime);
                         event.put(TRANSITION, 1);
+                        event.put(REPETITIONS, 0);
+                        event.put(POPULARITY, popularity);
                         event.put(TYPE, locationType.type);
 
                         if (location.latLong != null) {
@@ -203,6 +234,8 @@ public class Location {
                         event.put(locationWithUuid(locationType), location.newLoc);
                         event.put(DWELL_TIME, dWellTime);
                         event.put(TRANSITION, 0);
+                        event.put(REPETITIONS, newRepetitions);
+                        event.put(POPULARITY, popularity);
                         event.put(TYPE, locationType.type);
 
                         if (location.latLong != null) {
@@ -215,6 +248,8 @@ public class Location {
 
                     log.debug("Consolidating state, sending [{}] events", toSend.size());
 
+                    newRepetitions += 1;
+                    repeatLocations.put(location.newLoc, newRepetitions);
                     tGlobal = location.tLastSeen;
                     tLastSeen = location.tLastSeen;
                     tTransition = location.tTransition;
@@ -254,6 +289,7 @@ public class Location {
         map.put(NEW_LOC, newLoc);
         map.put(CONSOLIDATED, consolidated);
         map.put(ENTRANCE, entrance);
+        map.put(REPEAT_LOCATION, repeatLocations);
 
         if (latLong != null) {
             map.put(LATLONG, latLong);

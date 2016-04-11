@@ -26,6 +26,7 @@ public class SamzaLocationTask implements StreamTask, InitableTask, WindowableTa
     static public Long consolidatedTime;
     static public Long expiredTime;
     static public Long maxDwellTime;
+    static public Long expiredRepetitionsTime;
 
     private List<String> dimToEnrich = Lists.newArrayList(
             // Base dimensions
@@ -41,7 +42,10 @@ public class SamzaLocationTask implements StreamTask, InitableTask, WindowableTa
         this.store = (KeyValueStore<String, Map<String, Object>>) taskContext.getStore("location");
         consolidatedTime = config.getLong("redborder.location.consolidatedTime.seconds", 3 * MINUTE);
         expiredTime = config.getLong("redborder.location.expiredTime.seconds", 30 * MINUTE);
-        maxDwellTime = config.getLong("redborder.location.maxDwellTime.minute", 24 * 60L); // 1D = 24h * 60min
+        // 1D = 24h * 60min
+        maxDwellTime = config.getLong("redborder.location.maxDwellTime.minute", 24 * 60L);
+        // 1W = 24h * 60min * 7D
+        expiredRepetitionsTime = config.getLong("redborder.location.expiredRepetitionsTime.minute", 24 * 60L * 7);
     }
 
     @Override

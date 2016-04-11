@@ -22,6 +22,9 @@ public class Dimensions {
     public final static String CONSOLIDATED = "consolidated";
     public final static String ENTRANCE = "entrance";
     public final static String TYPE = "type";
+    public final static String REPEAT_LOCATION = "repeat_location";
+    public final static String REPETITIONS = "repetitions";
+    public final static String POPULARITY = "popularity";
 
     public final static Long MINUTE = 60L;
     public final static String UUID = "uuid";
