@@ -10,7 +10,7 @@
 
 
     <properties>
-        <samza.version>0.10.0</samza.version>
+        <samza.version>0.12.0</samza.version>
     </properties>
 
 
@@ -41,7 +41,7 @@
 
         <dependency>
             <groupId>org.apache.samza</groupId>
-            <artifactId>samza-core_2.10</artifactId>
+            <artifactId>samza-core_2.11</artifactId>
             <version>${samza.version}</version>
         </dependency>
 
@@ -61,7 +61,7 @@
 
         <dependency>
             <groupId>org.apache.samza</groupId>
-            <artifactId>samza-yarn_2.10</artifactId>
+            <artifactId>samza-yarn_2.11</artifactId>
             <version>${samza.version}</version>
             <exclusions>
                 <exclusion>
@@ -79,19 +79,19 @@
 
         <dependency>
             <groupId>org.apache.samza</groupId>
-            <artifactId>samza-kv_2.10</artifactId>
+            <artifactId>samza-kv_2.11</artifactId>
             <version>${samza.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.samza</groupId>
-            <artifactId>samza-kv-rocksdb_2.10</artifactId>
+            <artifactId>samza-kv-rocksdb_2.11</artifactId>
             <version>${samza.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.samza</groupId>
-            <artifactId>samza-kafka_2.10</artifactId>
+            <artifactId>samza-kafka_2.11</artifactId>
             <version>${samza.version}</version>
         </dependency>
 
